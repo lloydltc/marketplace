@@ -1,0 +1,40 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('vendors', function (Blueprint $table) {
+            $table->enum('status', ['pending', 'approved', 'suspended', 'closed'])
+                ->default('pending')
+                ->after('slug');
+
+            $table->enum('tier', ['bronze', 'silver', 'gold', 'platinum'])
+                ->default('bronze')
+                ->after('status');
+
+            $table->decimal('commission_rate', 5, 2)
+                ->default(10.00)
+                ->after('tier');
+
+            $table->string('business_registration')->nullable()->after('commission_rate');
+            $table->string('tax_id')->nullable()->after('business_registration');
+
+            $table->index('status');
+            $table->index('tier');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('vendors', function (Blueprint $table) {
+            $table->dropIndex(['status']);
+            $table->dropIndex(['tier']);
+            $table->dropColumn(['status', 'tier', 'commission_rate', 'business_registration', 'tax_id']);
+        });
+    }
+};

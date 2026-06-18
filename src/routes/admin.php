@@ -1,0 +1,155 @@
+<?php
+
+use App\Http\Controllers\Admin\ApplicationController;
+use App\Http\Controllers\Admin\CashSessionController;
+use App\Http\Controllers\Admin\ConciergeController as AdminConciergeController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DeliveryZoneController;
+use App\Http\Controllers\Admin\DispatchController;
+use App\Http\Controllers\Admin\PayoutController;
+use App\Http\Controllers\Admin\PlatformSettingController;
+use App\Http\Controllers\Admin\PromotionPackageController;
+use App\Http\Controllers\Admin\RfqModerationController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Admin\WalletAdjustmentController;
+use App\Http\Controllers\Admin\UserTierController;
+use App\Http\Controllers\Admin\VendorTierController;
+use App\Modules\Categories\Controllers\Admin\CategoryController;
+use App\Modules\Products\Controllers\Admin\ProductApprovalController;
+use App\Modules\Products\Controllers\Admin\ProductController as AdminProductController;
+use App\Modules\Vehicles\Controllers\Admin\VehicleApprovalController;
+use App\Modules\Vehicles\Controllers\Admin\VehicleController as AdminVehicleController;
+use App\Modules\Vendors\Controllers\Admin\VendorApprovalController;
+use App\Modules\Vendors\Controllers\Admin\VendorBankAccountAdminController;
+use App\Modules\Vendors\Controllers\Admin\VendorController;
+use App\Modules\Vendors\Controllers\Admin\VendorDocumentController;
+use Illuminate\Support\Facades\Route;
+
+// Dashboard
+Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+// Pending applications (vendor + private seller)
+Route::prefix('applications')->name('applications.')->group(function () {
+    Route::get('/', [ApplicationController::class, 'index'])->name('index');
+    Route::post('{user}/approve', [ApplicationController::class, 'approve'])->name('approve');
+    Route::post('{user}/reject', [ApplicationController::class, 'reject'])->name('reject');
+});
+
+// Platform settings (fees, thresholds, limits) — super_admin only.
+Route::middleware('role:super_admin')->prefix('settings')->name('settings.')->group(function () {
+    Route::get('/', [PlatformSettingController::class, 'index'])->name('index');
+    Route::put('/', [PlatformSettingController::class, 'update'])->name('update');
+});
+
+// Vendor payouts (weekly batch + approval)
+Route::prefix('payouts')->name('payouts.')->group(function () {
+    Route::get('/', [PayoutController::class, 'index'])->name('index');
+    Route::post('generate', [PayoutController::class, 'generate'])->name('generate');
+    Route::post('{payout}/approve', [PayoutController::class, 'approve'])->name('approve');
+    Route::post('{payout}/mark-paid', [PayoutController::class, 'markPaid'])->name('mark-paid');
+    Route::post('{payout}/reject', [PayoutController::class, 'reject'])->name('reject');
+});
+
+// Manual wallet adjustment (audited)
+Route::post('vendors/{vendor}/wallet/adjust', [WalletAdjustmentController::class, 'store'])->name('vendors.wallet.adjust');
+
+// Delivery dispatch (assign riders to FBS orders)
+Route::get('dispatch', [DispatchController::class, 'index'])->name('dispatch.index');
+Route::post('dispatch/{order}/assign', [DispatchController::class, 'assign'])->name('dispatch.assign');
+
+// Rider cash reconciliation (gates FBS-COD settlement)
+Route::prefix('cash-sessions')->name('cash-sessions.')->group(function () {
+    Route::get('/', [CashSessionController::class, 'index'])->name('index');
+    Route::post('{session}/reconcile', [CashSessionController::class, 'reconcile'])->name('reconcile');
+    Route::post('{session}/resolve', [CashSessionController::class, 'resolve'])->name('resolve');
+});
+
+// Delivery zones
+Route::prefix('delivery-zones')->name('delivery-zones.')->group(function () {
+    Route::get('/', [DeliveryZoneController::class, 'index'])->name('index');
+    Route::post('/', [DeliveryZoneController::class, 'store'])->name('store');
+    Route::post('{zone}/toggle', [DeliveryZoneController::class, 'toggle'])->name('toggle');
+});
+
+// RFQ moderation (spam/abuse)
+Route::prefix('rfq')->name('rfq.')->group(function () {
+    Route::get('/', [RfqModerationController::class, 'index'])->name('index');
+    Route::post('{partRequest}/reject', [RfqModerationController::class, 'reject'])->name('reject');
+});
+
+// Concierge workflow queue
+Route::prefix('concierge')->name('concierge.')->group(function () {
+    Route::get('/', [AdminConciergeController::class, 'index'])->name('index');
+    Route::get('{conciergeRequest}', [AdminConciergeController::class, 'show'])->name('show');
+    Route::post('{conciergeRequest}/quote', [AdminConciergeController::class, 'quote'])->name('quote');
+    Route::post('{conciergeRequest}/transition', [AdminConciergeController::class, 'transition'])->name('transition');
+});
+
+// Promotion packages catalog + revenue summary
+Route::prefix('promotions')->name('promotions.')->group(function () {
+    Route::get('/', [PromotionPackageController::class, 'index'])->name('index');
+    Route::post('/', [PromotionPackageController::class, 'store'])->name('store');
+    Route::post('{package}/toggle', [PromotionPackageController::class, 'toggle'])->name('toggle');
+});
+
+// Category management
+Route::resource('categories', CategoryController::class)->except(['show']);
+
+// Product management
+Route::prefix('products')->name('products.')->group(function () {
+    Route::get('/', [AdminProductController::class, 'index'])->name('index');
+    Route::get('{product}', [AdminProductController::class, 'show'])->name('show');
+    Route::post('{product}/approve', [ProductApprovalController::class, 'approve'])->name('approve');
+    Route::post('{product}/reject', [ProductApprovalController::class, 'reject'])->name('reject');
+});
+
+// Vehicle management
+Route::prefix('vehicles')->name('vehicles.')->group(function () {
+    Route::get('/', [AdminVehicleController::class, 'index'])->name('index');
+    Route::get('{vehicle}', [AdminVehicleController::class, 'show'])->name('show');
+    Route::post('{vehicle}/approve', [VehicleApprovalController::class, 'approve'])->name('approve');
+    Route::post('{vehicle}/reject', [VehicleApprovalController::class, 'reject'])->name('reject');
+});
+
+// Vendor management
+Route::prefix('vendors')->name('vendors.')->group(function () {
+    Route::get('/', [VendorController::class, 'index'])->name('index');
+    Route::get('{vendor}', [VendorController::class, 'show'])->name('show');
+
+    // Approval actions
+    Route::post('{vendor}/approve', [VendorApprovalController::class, 'approve'])->name('approve');
+    Route::post('{vendor}/reject', [VendorApprovalController::class, 'reject'])->name('reject');
+    Route::post('{vendor}/suspend', [VendorApprovalController::class, 'suspend'])->name('suspend');
+    Route::post('{vendor}/reactivate', [VendorApprovalController::class, 'reactivate'])->name('reactivate');
+
+    // Document review
+    Route::get('{vendor}/documents', [VendorDocumentController::class, 'index'])->name('documents');
+    Route::post('{vendor}/documents/{document}/review', [VendorDocumentController::class, 'review'])->name('documents.review');
+
+    // Bank account verification
+    Route::post('{vendor}/bank-accounts/{account}/verify', [VendorBankAccountAdminController::class, 'verify'])->name('bank.verify');
+
+    // Tier management
+    Route::post('{vendor}/tier', [VendorTierController::class, 'update'])->name('tier.update');
+});
+
+// User management (private sellers + all roles)
+Route::prefix('users')->name('users.')->group(function () {
+    // Read-only listing/detail — admin + super_admin (route group is role:super_admin|admin)
+    Route::get('/', [UserController::class, 'index'])->name('index');
+
+    // Privileged, destructive user management — super_admin only, all audit-logged (R6).
+    Route::middleware('role:super_admin')->group(function () {
+        Route::get('create', [UserManagementController::class, 'create'])->name('create');
+        Route::post('/', [UserManagementController::class, 'store'])->name('store');
+        Route::post('{user}/suspend', [UserManagementController::class, 'suspend'])->name('suspend');
+        Route::post('{user}/reactivate', [UserManagementController::class, 'reactivate'])->name('reactivate');
+        Route::put('{user}/role', [UserManagementController::class, 'updateRole'])->name('role');
+        Route::post('{user}/reset-password', [UserManagementController::class, 'resetPassword'])->name('reset-password');
+        Route::post('{user}/verify-email', [UserManagementController::class, 'verifyEmail'])->name('verify-email');
+    });
+
+    Route::get('{user}', [UserController::class, 'show'])->name('show');
+    Route::post('{user}/tier', [UserTierController::class, 'update'])->name('tier.update');
+});
