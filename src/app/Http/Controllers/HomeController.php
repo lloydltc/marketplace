@@ -20,6 +20,10 @@ class HomeController extends Controller
         $products = $this->products->paginatePublic([], 8)->items();
         $vehicles = $this->vehicles->paginatePublic([], 8)->items();
 
-        return view('customer.dashboard', compact('products', 'vehicles'));
+        // H6: discovery rails — browse by type / make, all count-driven.
+        $typeCounts   = $this->vehicles->countByType();
+        $popularMakes = $this->vehicles->popularMakes(10);
+
+        return view('customer.dashboard', compact('products', 'vehicles', 'typeCounts', 'popularMakes'));
     }
 }

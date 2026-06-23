@@ -58,12 +58,22 @@ class VehicleRepository implements VehicleRepositoryInterface
         return $query->latest()->paginate($perPage);
     }
 
-    public function paginatePublic(array $filters = [], int $perPage = 20): LengthAwarePaginator
+    /**
+     * Base query for everything publicly visible: active + not-yet-expired.
+     * Shared by paginatePublic and the H6 count helpers so the visibility rule
+     * lives in exactly one place.
+     */
+    private function publicBaseQuery()
     {
-        $query = $this->model->query()
+        return $this->model->query()
             ->active()
             // D5: hide listings whose expiry has lapsed but the sweep job hasn't run yet.
-            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()));
+    }
+
+    public function paginatePublic(array $filters = [], int $perPage = 20): LengthAwarePaginator
+    {
+        $query = $this->publicBaseQuery()
             ->with(['make', 'vehicleModel', 'vendor', 'seller', 'images']);
 
         $this->applyCommonFilters($query, $filters);
@@ -89,6 +99,55 @@ class VehicleRepository implements VehicleRepositoryInterface
         };
 
         return $query->paginate($perPage);
+    }
+
+    public function countPublic(array $filters = []): int
+    {
+        $query = $this->publicBaseQuery();
+        $this->applyCommonFilters($query, $filters);
+
+        return $query->count();
+    }
+
+    public function countByType(): array
+    {
+        return $this->publicBaseQuery()
+            ->selectRaw('vehicle_type, COUNT(*) AS total')
+            ->groupBy('vehicle_type')
+            ->pluck('total', 'vehicle_type')
+            ->map(fn ($n) => (int) $n)
+            ->all();
+    }
+
+    public function countByBodyType(?string $vehicleType = null): array
+    {
+        $query = $this->publicBaseQuery()->whereNotNull('body_type');
+
+        if ($vehicleType) {
+            $query->where('vehicle_type', $vehicleType);
+        }
+
+        return $query
+            ->selectRaw('body_type, COUNT(*) AS total')
+            ->groupBy('body_type')
+            ->orderByDesc('total')
+            ->pluck('total', 'body_type')
+            ->map(fn ($n) => (int) $n)
+            ->all();
+    }
+
+    public function popularMakes(int $limit = 12): \Illuminate\Support\Collection
+    {
+        return $this->publicBaseQuery()
+            ->join('vehicle_makes', 'vehicles.make_id', '=', 'vehicle_makes.id')
+            ->whereNotNull('make_id')
+            ->selectRaw('vehicle_makes.id AS id, vehicle_makes.name AS name, COUNT(*) AS total')
+            ->groupBy('vehicle_makes.id', 'vehicle_makes.name')
+            ->orderByDesc('total')
+            ->orderBy('vehicle_makes.name')
+            ->limit($limit)
+            ->get()
+            ->map(fn ($row) => (object) ['id' => $row->id, 'name' => $row->name, 'total' => (int) $row->total]);
     }
 
     /**

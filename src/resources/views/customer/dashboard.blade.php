@@ -21,16 +21,39 @@
             </button>
         </form>
 
-        {{-- H0/H6: browse by type --}}
+        {{-- H0/H6: browse by type (count-driven) --}}
         <div class="flex flex-wrap items-center justify-center gap-2 mt-6">
             @foreach (config('vehicle_types.types') as $key => $cfg)
+                @php $tc = $typeCounts[$key] ?? 0; @endphp
                 <a href="{{ route('vehicles.index', ['vehicle_type' => $key]) }}"
                    class="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors">
                     <span aria-hidden="true">{{ $cfg['icon'] }}</span> {{ $cfg['plural'] }}
+                    @if ($tc > 0)
+                        <span class="text-white/50 text-xs tabular-nums">{{ number_format($tc) }}</span>
+                    @endif
                 </a>
             @endforeach
         </div>
     </div>
+
+    {{-- H6: browse by make (count-driven, only makes with live inventory) --}}
+    @if ($popularMakes->isNotEmpty())
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold text-neutral-900">Browse by make</h2>
+                <a href="{{ route('vehicles.index') }}" class="text-sm text-[#3DB8E8] hover:underline">All makes →</a>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                @foreach ($popularMakes as $make)
+                    <a href="{{ route('vehicles.index', ['make_id' => $make->id]) }}"
+                       class="inline-flex items-center gap-1.5 bg-white border border-neutral-200 hover:border-neutral-400 text-neutral-700 text-sm font-medium px-4 py-2 rounded-full transition-colors">
+                        {{ $make->name }}
+                        <span class="text-neutral-400 text-xs tabular-nums">{{ number_format($make->total) }}</span>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    @endif
 
     {{-- Vehicles for sale --}}
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14">

@@ -38,6 +38,36 @@ class SearchController extends Controller
         return view('search.results', compact('q', 'vehicles', 'products'));
     }
 
+    /**
+     * H6: live inventory count for the vehicle filter form. Returns how many
+     * active listings match the currently-selected filters so the Search button
+     * can read "Show N vehicles" before the user submits.
+     */
+    public function vehicleCount(Request $request): JsonResponse
+    {
+        $count = $this->vehicles->countPublic([
+            'vehicle_type' => $request->input('vehicle_type'),
+            'search'       => $request->input('search'),
+            'make_id'      => $request->input('make_id'),
+            'model_id'     => $request->input('model_id'),
+            'year_min'     => $request->input('year_min'),
+            'year_max'     => $request->input('year_max'),
+            'mileage_max'  => $request->input('mileage_max'),
+            'min_price'    => $request->input('min_price'),
+            'max_price'    => $request->input('max_price'),
+            'body_type'    => $request->input('body_type'),
+            'transmission' => $request->input('transmission'),
+            'fuel_type'    => $request->input('fuel_type'),
+            'condition'    => $request->input('condition'),
+            'features'     => $request->input('features', []),
+        ]);
+
+        return response()->json([
+            'count' => $count,
+            'label' => $count === 1 ? 'Show 1 vehicle' : 'Show ' . number_format($count) . ' vehicles',
+        ]);
+    }
+
     public function products(Request $request): JsonResponse
     {
         return response()->json($this->suggest(

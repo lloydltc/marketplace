@@ -42,7 +42,11 @@ class VehicleController extends Controller
         $makes = $this->makeRepository->allWithModels();
         $filterableFeatures = \App\Modules\Vehicles\Models\FeatureDefinition::filterable()->ordered()->get();
 
-        return view('vehicles.index', compact('vehicles', 'makes', 'filterableFeatures'));
+        // H6: live counts for the type tabs + the body-type browse rail.
+        $typeCounts = $this->repository->countByType();
+        $bodyTypeCounts = $this->repository->countByBodyType($request->input('vehicle_type'));
+
+        return view('vehicles.index', compact('vehicles', 'makes', 'filterableFeatures', 'typeCounts', 'bodyTypeCounts'));
     }
 
     public function show(Vehicle $vehicle): View

@@ -64,6 +64,9 @@ Route::get('search', [SearchController::class, 'index'])->name('search.index');
 Route::get('search/products', [SearchController::class, 'products'])->name('search.products');
 Route::get('search/vehicles', [SearchController::class, 'vehicles'])->name('search.vehicles');
 
+// H6: live inventory count for the vehicle filter form (JSON)
+Route::get('search/vehicles/count', [SearchController::class, 'vehicleCount'])->name('search.vehicles.count');
+
 // "Can't find it? Request it" — RFQ entry point (full lifecycle in Phase 15)
 Route::get('requests/new', [RfqController::class, 'create'])->name('rfq.create');
 

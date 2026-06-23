@@ -10,8 +10,21 @@
             <p class="text-sm text-neutral-500 mt-1">Browse from dealers and private sellers.</p>
         </div>
 
-        {{-- H0/H6: listing-type tabs --}}
+        {{-- H0/H6: listing-type tabs (with live counts) --}}
         @include('partials.vehicle-type-tabs')
+
+        {{-- H6: browse by body type --}}
+        @if (! empty($bodyTypeCounts))
+            <div class="flex flex-wrap gap-2 mb-5">
+                @foreach ($bodyTypeCounts as $body => $count)
+                    <a href="{{ route('vehicles.index', array_merge(request()->except(['page']), ['body_type' => $body])) }}"
+                       class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium transition-colors {{ request('body_type') === $body ? 'bg-[#F0A820]/15 text-[#B5790F] border border-[#F0A820]/40' : 'bg-neutral-50 border border-neutral-200 text-neutral-600 hover:border-neutral-400' }}">
+                        <span class="capitalize">{{ str_replace('_', ' ', $body) }}</span>
+                        <span class="text-neutral-400 tabular-nums">{{ number_format($count) }}</span>
+                    </a>
+                @endforeach
+            </div>
+        @endif
 
         <div x-data="{ filtersOpen: false }" class="mb-3">
             {{-- Mobile: filters live in a drawer, not a long scroll (UI_STANDARDS) --}}
@@ -20,7 +33,26 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4h18M6 8h12M9 12h6M11 16h2"/></svg>
                 <span x-text="filtersOpen ? 'Hide filters' : 'Filters'">Filters</span>
             </button>
-        <form method="GET" class="sm:block space-y-3" :class="{ 'hidden': !filtersOpen }">
+        <form method="GET" class="sm:block space-y-3" :class="{ 'hidden': !filtersOpen }"
+              x-data="{
+                  endpoint: @js(route('search.vehicles.count')),
+                  count: {{ $vehicles->total() }},
+                  loading: false,
+                  get label() {
+                      if (this.loading) return 'Counting…';
+                      return 'Show ' + Number(this.count).toLocaleString() + (this.count === 1 ? ' vehicle' : ' vehicles');
+                  },
+                  refresh() {
+                      this.loading = true;
+                      const params = new URLSearchParams(new FormData(this.$root)).toString();
+                      fetch(this.endpoint + '?' + params, { headers: { 'Accept': 'application/json' } })
+                          .then(r => r.json())
+                          .then(d => { this.count = d.count; })
+                          .catch(() => {})
+                          .finally(() => { this.loading = false; });
+                  }
+              }"
+              x-on:change="refresh()" x-on:input.debounce.500ms="refresh()">
             <div class="flex flex-wrap gap-3">
                 <x-search-autocomplete name="search" :endpoint="route('search.vehicles')"
                                        :value="request('search')" placeholder="Search make, model or year…" />
@@ -121,7 +153,7 @@
             <div class="flex flex-wrap items-center gap-3 pt-1">
                 <button type="submit"
                         class="bg-[#F0A820] hover:bg-[#F0A820]/90 text-[#1A1A24] font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
-                    Search
+                    <span x-text="label">Search</span>
                 </button>
                 @if (request()->hasAny(['search', 'make_id', 'condition', 'fuel_type', 'sort', 'body_type', 'transmission', 'year_min', 'year_max', 'min_price', 'max_price', 'features']))
                     <a href="{{ route('vehicles.index') }}"
@@ -142,6 +174,9 @@
                 <x-rfq-cta context="vehicles" :query="request('search', '')" />
             </div>
         @else
+            <p class="text-sm text-neutral-500 mb-4 tabular-nums">
+                {{ number_format($vehicles->total()) }} {{ Str::plural('vehicle', $vehicles->total()) }} found
+            </p>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 @foreach ($vehicles as $vehicle)
                     <a href="{{ route('vehicles.show', $vehicle) }}"
