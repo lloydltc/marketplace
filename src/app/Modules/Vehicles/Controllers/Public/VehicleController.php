@@ -55,6 +55,9 @@ class VehicleController extends Controller
             'featureValues.definition',
         ]);
 
+        // H5: record a (deduped, bot-filtered) detail view for seller analytics.
+        app(\App\Modules\Analytics\Services\AnalyticsService::class)->record('detail_view', $vehicle, request());
+
         return view('vehicles.show', compact('vehicle'));
     }
 

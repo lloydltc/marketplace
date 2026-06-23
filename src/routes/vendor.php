@@ -41,6 +41,9 @@ Route::post('orders/{order}/transition', [VendorOrderController::class, 'transit
 Route::get('leads', [\App\Http\Controllers\LeadController::class, 'vendorIndex'])->name('leads.index');
 Route::put('leads/{lead}', [\App\Http\Controllers\LeadController::class, 'update'])->name('leads.update');
 
+// Listing analytics (H5)
+Route::get('analytics', [\App\Http\Controllers\ListingAnalyticsController::class, 'vendorIndex'])->name('analytics.index');
+
 // RFQ — browse open part requests and quote
 Route::get('requests', [VendorRfqController::class, 'index'])->name('requests.index');
 Route::post('requests/{partRequest}/quote', [VendorRfqController::class, 'quote'])->name('requests.quote');

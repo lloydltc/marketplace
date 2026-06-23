@@ -16,6 +16,9 @@ Route::get('sales', [SalesController::class, 'index'])->name('sales.index');
 Route::get('leads', [LeadController::class, 'sellerIndex'])->name('leads.index');
 Route::put('leads/{lead}', [LeadController::class, 'update'])->name('leads.update');
 
+// Listing analytics (H5)
+Route::get('analytics', [\App\Http\Controllers\ListingAnalyticsController::class, 'sellerIndex'])->name('analytics.index');
+
 // Vehicle listings
 Route::get('vehicles', [SellerVehicleController::class, 'index'])->name('vehicles.index');
 Route::get('vehicles/create', [SellerVehicleController::class, 'create'])->name('vehicles.create');

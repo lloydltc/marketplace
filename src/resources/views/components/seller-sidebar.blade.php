@@ -4,6 +4,7 @@
         ['My listings', 'seller.vehicles.index', 'seller.vehicles.index'],
         ['Sales & enquiries', 'seller.sales.index', 'seller.sales.*'],
         ['Leads', 'seller.leads.index', 'seller.leads.*'],
+        ['Analytics', 'seller.analytics.index', 'seller.analytics.*'],
     ];
 @endphp
 

@@ -26,3 +26,6 @@ Schedule::command('promotions:expire')->dailyAt('02:45');
 // D5: remind sellers before their vehicle listings lapse, then sweep expired ones.
 Schedule::command('vehicles:expiry-reminders')->dailyAt('08:00');
 Schedule::command('vehicles:expire')->dailyAt('04:00');
+
+// H5: pre-aggregate listing analytics hourly (keeps dashboards fresh + bounds raw table).
+Schedule::command('analytics:aggregate')->hourly();

@@ -8,6 +8,7 @@
         ['Vehicles', 'vendor.vehicles.index', 'vendor.vehicles.*'],
         ['Sales', 'vendor.orders.index', 'vendor.orders.*'],
         ['Leads', 'vendor.leads.index', 'vendor.leads.*'],
+        ['Analytics', 'vendor.analytics.index', 'vendor.analytics.*'],
         ['Part requests', 'vendor.requests.index', 'vendor.requests.*'],
     ];
 

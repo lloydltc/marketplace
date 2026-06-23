@@ -26,7 +26,9 @@ class ListingContactController extends Controller
             'message' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $this->leads->record($validated['type'] ?? 'contact_reveal', $vehicle, [
+        $type = $validated['type'] ?? 'contact_reveal';
+
+        $this->leads->record($type, $vehicle, [
             'buyer'         => $request->user(),
             'contact_name'  => $validated['name'] ?? $request->user()?->name,
             'contact_phone' => $validated['phone'] ?? null,
@@ -34,6 +36,10 @@ class ListingContactController extends Controller
             'source'        => $request->headers->get('referer'),
             'ip'            => $request->ip(),
         ]);
+
+        // H5: mirror the contact as an analytics event (deduped/bot-filtered).
+        $analyticsType = $type === 'contact_reveal' ? 'phone_reveal' : ($type === 'message' ? 'enquiry' : $type);
+        app(\App\Modules\Analytics\Services\AnalyticsService::class)->record($analyticsType, $vehicle, $request);
 
         $contact = $vehicle->contactDetails();
 
