@@ -46,6 +46,21 @@
                class="w-full border border-neutral-300 rounded-lg px-3 py-2 text-sm">
     </div>
 
+    <div>
+        <label class="block text-sm font-medium text-neutral-700 mb-1">Applies to listing types <span class="text-neutral-400 font-normal">(none = all)</span></label>
+        @php $selectedTypes = old('applies_to_types', $feature->applies_to_types ?? []); @endphp
+        <div class="flex flex-wrap gap-4 mt-1">
+            @foreach (config('vehicle_types.types') as $key => $cfg)
+                <label class="flex items-center gap-1.5 text-sm text-neutral-700">
+                    <input type="checkbox" name="applies_to_types[]" value="{{ $key }}"
+                           @checked(in_array($key, (array) $selectedTypes, true))
+                           class="rounded border-neutral-300 text-[#F0A820] focus:ring-[#F0A820]/40">
+                    {{ $cfg['icon'] }} {{ $cfg['label'] }}
+                </label>
+            @endforeach
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
             <label class="block text-sm font-medium text-neutral-700 mb-1">Sort order</label>

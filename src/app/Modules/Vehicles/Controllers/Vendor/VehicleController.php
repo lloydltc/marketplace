@@ -49,7 +49,12 @@ class VehicleController extends Controller
 
         $makes = $this->makeRepository->allWithModels();
 
-        return view('vendor.vehicles.create', compact('vendor', 'makes'));
+        $type = $request->query('type');
+        if ($type !== null && ! in_array($type, Vehicle::types(), true)) {
+            $type = null;
+        }
+
+        return view('vendor.vehicles.create', compact('vendor', 'makes', 'type'));
     }
 
     public function store(StoreVehicleRequest $request): RedirectResponse
@@ -57,7 +62,8 @@ class VehicleController extends Controller
         $vendor = $request->attributes->get('vendor');
         abort_if($vendor === null, 404);
 
-        $vehicle = $this->service->createForVendor($vendor, $request->validated());
+        $status  = $request->input('action') === 'draft' ? 'draft' : 'pending';
+        $vehicle = $this->service->createForVendor($vendor, $request->validated(), $status);
 
         $imageNote = '';
         foreach ($request->file('images', []) as $file) {
@@ -69,9 +75,11 @@ class VehicleController extends Controller
             }
         }
 
+        $msg = $status === 'draft' ? 'Draft saved — finish it any time.' : 'Vehicle submitted for admin review.';
+
         return redirect()
             ->route('vendor.vehicles.show', $vehicle)
-            ->with('status', 'Vehicle submitted for admin review.' . $imageNote);
+            ->with('status', $msg . $imageNote);
     }
 
     public function show(Request $request, Vehicle $vehicle): View
@@ -105,11 +113,17 @@ class VehicleController extends Controller
         abort_if($vendor === null, 404);
         abort_unless($vehicle->vendor_id === $vendor->id, 403);
 
-        $this->service->update($vehicle, $request->validated());
+        $publishAs = $request->filled('action')
+            ? ($request->input('action') === 'draft' ? 'draft' : 'pending')
+            : null;
+
+        $this->service->update($vehicle, $request->validated(), $publishAs);
+
+        $msg = $publishAs === 'draft' ? 'Draft saved.' : 'Vehicle updated and submitted for review.';
 
         return redirect()
             ->route('vendor.vehicles.show', $vehicle)
-            ->with('status', 'Vehicle updated and resubmitted for review.');
+            ->with('status', $msg);
     }
 
     public function destroy(Request $request, Vehicle $vehicle): RedirectResponse

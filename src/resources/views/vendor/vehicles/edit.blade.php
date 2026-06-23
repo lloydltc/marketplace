@@ -35,14 +35,7 @@
 
             @include('partials.vehicle-form-fields')
 
-            <div class="flex items-center gap-3 pt-2">
-                <button type="submit"
-                        class="bg-[#F0A820] hover:bg-[#F0A820]/90 text-[#1A1A24] font-semibold px-6 py-2.5 rounded-lg text-sm transition-colors">
-                    Save Changes
-                </button>
-                <a href="{{ route('vendor.vehicles.show', $vehicle) }}"
-                   class="text-sm text-neutral-500 hover:text-neutral-700">Cancel</a>
-            </div>
+            @include('partials.listing-editor-actions', ['cancelUrl' => route('vendor.vehicles.show', $vehicle)])
         </form>
 
         @include('partials.image-manager', [

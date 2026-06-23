@@ -35,11 +35,17 @@ class Vehicle extends Model
         'engine_cc',
         'mileage',
         'vin',
+        'vehicle_type',
         'color',
         'condition',
         'status',
         'price_zwl',
         'price_usd',
+        'show_price',
+        'duty_paid',
+        'is_recent_import',
+        'ref_code',
+        'steering',
         'description',
         'rating',
         'review_count',
@@ -72,7 +78,16 @@ class Vehicle extends Model
             'expires_at'            => 'datetime',
             'renewed_at'            => 'datetime',
             'expiry_count'          => 'integer',
+            'show_price'            => 'boolean',
+            'duty_paid'             => 'boolean',
+            'is_recent_import'      => 'boolean',
         ];
+    }
+
+    /** POA = price hidden ("Price on application"). */
+    public function isPoa(): bool
+    {
+        return $this->show_price === false;
     }
 
     protected static function newFactory(): Factory
@@ -240,9 +255,14 @@ class Vehicle extends Model
         return ['name' => $this->seller?->name, 'phone' => $this->seller?->contact_phone, 'email' => $this->seller?->email];
     }
 
+    public function isDraft(): bool
+    {
+        return $this->status === 'draft';
+    }
+
     public function canBeEdited(): bool
     {
-        return in_array($this->status, ['pending', 'inactive', 'rejected'], true);
+        return in_array($this->status, ['draft', 'pending', 'inactive', 'rejected'], true);
     }
 
     public function isListedByVendor(): bool
@@ -263,6 +283,47 @@ class Vehicle extends Model
         return "{$this->year} {$make} {$model}";
     }
 
+    // ─── Listing type (H0) ──────────────────────────────────────────────────────
+
+    /** @return array<int, string> all valid type keys */
+    public static function types(): array
+    {
+        return array_keys(config('vehicle_types.types', []));
+    }
+
+    public static function typeConfig(string $type): ?array
+    {
+        return config("vehicle_types.types.{$type}");
+    }
+
+    public function typeLabel(): string
+    {
+        return config("vehicle_types.types.{$this->vehicle_type}.label", 'Vehicle');
+    }
+
+    public function typeIcon(): string
+    {
+        return config("vehicle_types.types.{$this->vehicle_type}.icon", '🚗');
+    }
+
+    /** Valid body-types for a given listing type (config-driven, type-scoped). */
+    public static function bodyTypesFor(string $type): array
+    {
+        return config("vehicle_types.types.{$type}.body_types", config('vehicle_types.types.vehicle.body_types', []));
+    }
+
+    /** Union of every type's body-types (for validation across types). */
+    public static function allBodyTypes(): array
+    {
+        return collect(config('vehicle_types.types', []))
+            ->pluck('body_types')->flatten()->unique()->values()->all();
+    }
+
+    public function scopeOfType(Builder $query, ?string $type): Builder
+    {
+        return $type ? $query->where('vehicle_type', $type) : $query;
+    }
+
     // ─── Pricing (either currency; sellers aren't forced to price in ZWL) ────────
 
     public function hasUsd(): bool
@@ -275,9 +336,12 @@ class Vehicle extends Model
         return $this->price_zwl !== null;
     }
 
-    /** Primary price line — USD preferred when present, else ZWL. */
+    /** Primary price line — USD preferred when present, else ZWL. POA hides it. */
     public function primaryPrice(): string
     {
+        if ($this->isPoa()) {
+            return 'Price on application';
+        }
         if ($this->price_usd !== null) {
             return 'USD ' . number_format((float) $this->price_usd, 2);
         }
@@ -291,6 +355,9 @@ class Vehicle extends Model
     /** Secondary price line (the other currency) when both are set, else null. */
     public function secondaryPrice(): ?string
     {
+        if ($this->isPoa()) {
+            return null;
+        }
         if ($this->price_usd !== null && $this->price_zwl !== null) {
             return 'ZWL ' . number_format((float) $this->price_zwl, 2);
         }

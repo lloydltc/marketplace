@@ -20,6 +20,16 @@
                 Search
             </button>
         </form>
+
+        {{-- H0/H6: browse by type --}}
+        <div class="flex flex-wrap items-center justify-center gap-2 mt-6">
+            @foreach (config('vehicle_types.types') as $key => $cfg)
+                <a href="{{ route('vehicles.index', ['vehicle_type' => $key]) }}"
+                   class="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors">
+                    <span aria-hidden="true">{{ $cfg['icon'] }}</span> {{ $cfg['plural'] }}
+                </a>
+            @endforeach
+        </div>
     </div>
 
     {{-- Vehicles for sale --}}

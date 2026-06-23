@@ -16,7 +16,7 @@ class UpdateVehicleRequest extends FormRequest
 
     public function rules(): array
     {
-        $rules = array_merge($this->vehicleRules(), $this->featureRules());
+        $rules = array_merge($this->vehicleRules($this->input('action') === 'draft'), $this->featureRules());
 
         // Allow the current vehicle's own VIN when updating
         $vehicleId = $this->route('vehicle')?->id;

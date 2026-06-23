@@ -62,13 +62,15 @@ class FeatureDefinitionController extends Controller
     private function validated(Request $request, ?FeatureDefinition $existing = null): array
     {
         $validated = $request->validate([
-            'name'          => ['required', 'string', 'max:80'],
-            'type'          => ['required', Rule::in(FeatureDefinition::TYPES)],
-            'unit'          => ['nullable', 'string', 'max:20'],
-            'options'       => ['nullable', 'string', 'max:500', Rule::requiredIf($request->input('type') === 'enum')], // comma-separated
-            'group'         => ['nullable', 'string', 'max:40'],
-            'sort_order'    => ['nullable', 'integer', 'min:0', 'max:999'],
-            'is_filterable' => ['nullable', 'boolean'],
+            'name'               => ['required', 'string', 'max:80'],
+            'type'               => ['required', Rule::in(FeatureDefinition::TYPES)],
+            'unit'               => ['nullable', 'string', 'max:20'],
+            'options'            => ['nullable', 'string', 'max:500', Rule::requiredIf($request->input('type') === 'enum')], // comma-separated
+            'group'              => ['nullable', 'string', 'max:40'],
+            'sort_order'         => ['nullable', 'integer', 'min:0', 'max:999'],
+            'is_filterable'      => ['nullable', 'boolean'],
+            'applies_to_types'   => ['nullable', 'array'],
+            'applies_to_types.*' => [Rule::in(\App\Modules\Vehicles\Models\Vehicle::types())],
         ]);
 
         // enum requires options; parse the comma-separated input into an array.
@@ -84,14 +86,16 @@ class FeatureDefinitionController extends Controller
         }
 
         return [
-            'name'          => $validated['name'],
-            'key'           => $existing?->key ?? Str::slug($validated['name'], '_'),
-            'type'          => $validated['type'],
-            'unit'          => $validated['unit'] ?? null,
-            'options'       => $options,
-            'group'         => $validated['group'] ?? null,
-            'sort_order'    => $validated['sort_order'] ?? 0,
-            'is_filterable' => (bool) ($validated['is_filterable'] ?? false),
+            'name'             => $validated['name'],
+            'key'              => $existing?->key ?? Str::slug($validated['name'], '_'),
+            'type'             => $validated['type'],
+            'unit'             => $validated['unit'] ?? null,
+            'options'          => $options,
+            // Empty selection = applies to all types (stored NULL).
+            'applies_to_types' => ! empty($validated['applies_to_types']) ? array_values($validated['applies_to_types']) : null,
+            'group'            => $validated['group'] ?? null,
+            'sort_order'       => $validated['sort_order'] ?? 0,
+            'is_filterable'    => (bool) ($validated['is_filterable'] ?? false),
         ];
     }
 }

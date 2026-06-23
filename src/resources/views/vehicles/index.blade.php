@@ -4,9 +4,14 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
         <div class="mb-6">
-            <h1 class="text-3xl font-semibold text-neutral-900">Vehicles for Sale</h1>
-            <p class="text-sm text-neutral-500 mt-1">Browse cars, trucks, and more from dealers and private sellers.</p>
+            <h1 class="text-3xl font-semibold text-neutral-900">
+                {{ request('vehicle_type') ? config('vehicle_types.types.' . request('vehicle_type') . '.plural', 'Vehicles') . ' for Sale' : 'Vehicles for Sale' }}
+            </h1>
+            <p class="text-sm text-neutral-500 mt-1">Browse from dealers and private sellers.</p>
         </div>
+
+        {{-- H0/H6: listing-type tabs --}}
+        @include('partials.vehicle-type-tabs')
 
         <div x-data="{ filtersOpen: false }" class="mb-3">
             {{-- Mobile: filters live in a drawer, not a long scroll (UI_STANDARDS) --}}
@@ -146,11 +151,14 @@
                         </div>
 
                         <div class="p-4 flex flex-col flex-1">
-                            @if ($vehicle->isFeatured())
-                                <span class="self-start mb-2 inline-flex items-center gap-1 text-xs font-semibold bg-[#F0A820]/15 text-[#B5790F] px-2 py-0.5 rounded-full">
-                                    ★ Featured
-                                </span>
-                            @endif
+                            <div class="flex flex-wrap gap-1 mb-2">
+                                @if ($vehicle->isFeatured())
+                                    <span class="inline-flex items-center gap-1 text-xs font-semibold bg-[#F0A820]/15 text-[#B5790F] px-2 py-0.5 rounded-full">★ Featured</span>
+                                @endif
+                                @if ($vehicle->is_recent_import)
+                                    <span class="text-xs font-semibold bg-[#3DB8E8]/15 text-[#1E7FA8] px-2 py-0.5 rounded-full">Recent import</span>
+                                @endif
+                            </div>
                             <div class="flex items-start justify-between gap-2 mb-1">
                                 <h2 class="text-sm font-semibold text-neutral-900 group-hover:text-[#F0A820] transition-colors leading-snug">
                                     {{ $vehicle->displayTitle() }}

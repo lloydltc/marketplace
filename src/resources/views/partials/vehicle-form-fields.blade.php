@@ -4,14 +4,17 @@
 --}}
 @php
     $v = $vehicle ?? null;
+    // H0: listing type — passed for create ($type), else the editing vehicle's type, else default.
+    $listingType = $type ?? $v?->vehicle_type ?? config('vehicle_types.default', 'vehicle');
     $conditions   = ['new' => 'New', 'used' => 'Used', 'salvage' => 'Salvage', 'rebuilt' => 'Rebuilt'];
-    $bodyTypes    = ['sedan' => 'Sedan', 'hatchback' => 'Hatchback', 'suv' => 'SUV', 'pickup' => 'Pickup',
-                     'van' => 'Van', 'minivan' => 'Minivan', 'wagon' => 'Station Wagon',
-                     'coupe' => 'Coupe', 'convertible' => 'Convertible',
-                     'bus' => 'Bus', 'truck' => 'Truck', 'other' => 'Other'];
+    // Body types are type-scoped + config-driven (cars vs bikes vs boats vs trailers).
+    $bodyTypes = collect(\App\Modules\Vehicles\Models\Vehicle::bodyTypesFor($listingType))
+        ->mapWithKeys(fn ($b) => [$b => \Illuminate\Support\Str::title(str_replace('_', ' ', $b))])->all();
     $transmissions = ['manual' => 'Manual', 'automatic' => 'Automatic', 'cvt' => 'CVT'];
     $fuelTypes    = ['petrol' => 'Petrol', 'diesel' => 'Diesel', 'electric' => 'Electric', 'hybrid' => 'Hybrid'];
 @endphp
+
+<input type="hidden" name="vehicle_type" value="{{ $listingType }}">
 
 <div class="bg-white border border-neutral-200 rounded-xl shadow-sm p-6 space-y-5">
     <h2 class="text-base font-semibold text-neutral-800">Vehicle Identity</h2>
@@ -178,14 +181,15 @@
         </div>
     </div>
 
-    {{-- Dynamic features / specs (D4 — admin-managed definitions, no hardcoding) --}}
+    {{-- Dynamic features / specs (D4 — admin-managed; H0 type-scoped) --}}
     @isset($featureDefinitions)
-        @if ($featureDefinitions->isNotEmpty())
+        @php $typeFeatures = $featureDefinitions->filter(fn ($d) => $d->appliesToType($listingType)); @endphp
+        @if ($typeFeatures->isNotEmpty())
             <div class="border-t border-neutral-100 pt-5">
                 <h3 class="text-sm font-semibold text-neutral-800 mb-1">Features &amp; specs</h3>
                 <p class="text-xs text-neutral-500 mb-4">Optional — set any that apply. Leave blank to skip.</p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    @foreach ($featureDefinitions as $def)
+                    @foreach ($typeFeatures as $def)
                         @php $current = old("features.{$def->id}", $v?->featureValueFor($def->id)?->value); @endphp
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 mb-1">
@@ -217,6 +221,48 @@
             </div>
         @endif
     @endisset
+
+    {{-- H2: Zimbabwe-market details --}}
+    <div class="border-t border-neutral-100 pt-5">
+        <h3 class="text-sm font-semibold text-neutral-800 mb-3">Import &amp; pricing details</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label for="ref_code" class="block text-sm font-medium text-neutral-700 mb-1">Reference code <span class="text-neutral-400 font-normal">(optional)</span></label>
+                <input type="text" id="ref_code" name="ref_code" value="{{ old('ref_code', $v?->ref_code) }}" maxlength="40"
+                       class="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
+            </div>
+            @if (in_array($listingType, ['vehicle', 'motorbike'], true))
+                <div>
+                    <label for="steering" class="block text-sm font-medium text-neutral-700 mb-1">Steering</label>
+                    <select id="steering" name="steering" class="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
+                        <option value="">—</option>
+                        <option value="rhd" @selected(old('steering', $v?->steering) === 'rhd')>Right-hand drive</option>
+                        <option value="lhd" @selected(old('steering', $v?->steering) === 'lhd')>Left-hand drive</option>
+                    </select>
+                </div>
+            @endif
+        </div>
+        <div class="flex flex-wrap gap-x-6 gap-y-2 mt-4">
+            <label class="flex items-center gap-2 text-sm text-neutral-700">
+                <input type="hidden" name="show_price" value="0">
+                <input type="checkbox" name="show_price" value="1" @checked(old('show_price', $v?->show_price ?? true))
+                       class="rounded border-neutral-300 text-[#F0A820] focus:ring-[#F0A820]/40">
+                Show price publicly <span class="text-neutral-400">(uncheck for POA)</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm text-neutral-700">
+                <input type="hidden" name="duty_paid" value="0">
+                <input type="checkbox" name="duty_paid" value="1" @checked(old('duty_paid', $v?->duty_paid))
+                       class="rounded border-neutral-300 text-[#F0A820] focus:ring-[#F0A820]/40">
+                Duty paid
+            </label>
+            <label class="flex items-center gap-2 text-sm text-neutral-700">
+                <input type="hidden" name="is_recent_import" value="0">
+                <input type="checkbox" name="is_recent_import" value="1" @checked(old('is_recent_import', $v?->is_recent_import))
+                       class="rounded border-neutral-300 text-[#F0A820] focus:ring-[#F0A820]/40">
+                Recent import
+            </label>
+        </div>
+    </div>
 
     <div>
         <label for="description" class="block text-sm font-medium text-neutral-700 mb-1">Description <span class="text-neutral-400 font-normal">(optional)</span></label>

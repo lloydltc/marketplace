@@ -7,7 +7,10 @@ use App\Modules\Vehicles\Models\Vehicle;
 use App\Modules\Vehicles\Repositories\VehicleMakeRepositoryInterface;
 use App\Modules\Vehicles\Repositories\VehicleRepositoryInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class VehicleController extends Controller
 {
@@ -19,6 +22,7 @@ class VehicleController extends Controller
     public function index(Request $request): View
     {
         $vehicles = $this->repository->paginatePublic([
+            'vehicle_type' => $request->input('vehicle_type'),
             'search'       => $request->input('search'),
             'make_id'      => $request->input('make_id'),
             'model_id'     => $request->input('model_id'),
@@ -52,5 +56,30 @@ class VehicleController extends Controller
         ]);
 
         return view('vehicles.show', compact('vehicle'));
+    }
+
+    /** H3: download all of a listing's (watermarked) images as a zip. */
+    public function downloadImages(Vehicle $vehicle): BinaryFileResponse
+    {
+        abort_unless($vehicle->isActive(), 404);
+
+        $images = $vehicle->images()->whereNotNull('processed_at')->orderBy('display_order')->get();
+        abort_if($images->isEmpty(), 404);
+
+        $slug = Str::slug($vehicle->displayTitle()) ?: 'listing';
+        $tmp  = tempnam(sys_get_temp_dir(), 'sd_imgs') . '.zip';
+
+        $zip = new \ZipArchive();
+        $zip->open($tmp, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        foreach ($images as $i => $img) {
+            $disk = Storage::disk($img->disk);
+            $path = $img->medium_path ?: $img->original_path; // serve the watermarked derivative
+            if ($disk->exists($path)) {
+                $zip->addFromString(sprintf('%s-%02d.jpg', $slug, $i + 1), $disk->get($path));
+            }
+        }
+        $zip->close();
+
+        return response()->download($tmp, "{$slug}-images.zip")->deleteFileAfterSend(true);
     }
 }

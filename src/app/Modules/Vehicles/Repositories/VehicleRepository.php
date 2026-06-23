@@ -141,6 +141,11 @@ class VehicleRepository implements VehicleRepositoryInterface
 
     private function applyCommonFilters($query, array $filters): void
     {
+        // H0/H6: listing type (cars/bikes/boats/trailers).
+        if (! empty($filters['vehicle_type'])) {
+            $query->where('vehicle_type', $filters['vehicle_type']);
+        }
+
         if (! empty($filters['search'])) {
             $like = '%' . trim($filters['search']) . '%';
             $query->where(function ($q) use ($like, $filters) {

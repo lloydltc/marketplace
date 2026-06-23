@@ -53,6 +53,10 @@ Route::get('vehicles/{vehicle}', [PublicVehicleController::class, 'show'])->name
 Route::post('vehicles/{vehicle}/contact', [\App\Http\Controllers\ListingContactController::class, 'vehicle'])
     ->middleware('throttle:20,1')->name('vehicles.contact');
 
+// H3: download all listing images as a zip (watermarked derivatives)
+Route::get('vehicles/{vehicle}/images/download', [PublicVehicleController::class, 'downloadImages'])
+    ->middleware('throttle:10,1')->name('vehicles.images.download');
+
 // Unified public search results (products + vehicles) — D2
 Route::get('search', [SearchController::class, 'index'])->name('search.index');
 

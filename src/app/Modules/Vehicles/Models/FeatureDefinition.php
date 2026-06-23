@@ -21,18 +21,38 @@ class FeatureDefinition extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'name', 'key', 'type', 'unit', 'options',
+        'name', 'key', 'type', 'unit', 'options', 'applies_to_types',
         'is_filterable', 'group', 'sort_order', 'is_active',
     ];
 
     protected function casts(): array
     {
         return [
-            'options'       => 'array',
-            'is_filterable' => 'boolean',
-            'is_active'     => 'boolean',
-            'sort_order'    => 'integer',
+            'options'          => 'array',
+            'applies_to_types' => 'array',
+            'is_filterable'    => 'boolean',
+            'is_active'        => 'boolean',
+            'sort_order'       => 'integer',
         ];
+    }
+
+    /** Does this feature apply to the given listing type? (null = all types). */
+    public function appliesToType(?string $type): bool
+    {
+        return empty($this->applies_to_types) || in_array($type, $this->applies_to_types, true);
+    }
+
+    /** Scope: definitions applicable to a listing type (NULL applies_to_types = all). */
+    public function scopeForType(Builder $q, ?string $type): Builder
+    {
+        if ($type === null) {
+            return $q;
+        }
+
+        return $q->where(function ($w) use ($type) {
+            $w->whereNull('applies_to_types')
+              ->orWhereJsonContains('applies_to_types', $type);
+        });
     }
 
     protected static function booted(): void

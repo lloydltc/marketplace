@@ -68,9 +68,22 @@ class ImageProcessingJob implements ShouldQueue
         };
         Storage::disk($disk)->put($image->original_path, $sanitised->toString());
 
-        // Medium: scale down to fit within 800×600 preserving aspect ratio
+        // Medium: scale down to fit within 800×600 preserving aspect ratio,
+        // then apply the SalmaDrive watermark (H3 — only processed/served images
+        // are watermarked; the original stays private/un-shared).
         $medium     = $manager->decodeBinary($contents);
         $medium->scaleDown(800, 600);
+
+        $watermark = public_path('logo/logo_white_trans.png');
+        if (is_file($watermark)) {
+            try {
+                $stamp = $manager->read($watermark)->scaleDown(160, 160);
+                $medium->place($stamp, 'bottom-right', 14, 14, 55);
+            } catch (\Throwable $e) {
+                Log::warning('Watermark skipped', ['image' => $image->id, 'error' => $e->getMessage()]);
+            }
+        }
+
         $mediumPath = $basePath . '/' . $stem . '_medium.jpg';
         Storage::disk($disk)->put($mediumPath, $medium->encode(new JpegEncoder(80))->toString());
 

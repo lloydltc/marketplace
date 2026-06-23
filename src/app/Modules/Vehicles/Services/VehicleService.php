@@ -24,59 +24,83 @@ class VehicleService
         private readonly \App\Modules\Settings\Services\SettingsService $settings,
     ) {}
 
-    public function createForVendor(Vendor $vendor, array $data): Vehicle
+    public function createForVendor(Vendor $vendor, array $data, string $status = 'pending'): Vehicle
     {
         $this->wallet->assertCanList($vendor);
         $this->tierService->assertCanCreateVehicleForVendor($vendor);
         $features = $this->pullFeatures($data);
-        $this->conditionService->validate($data);
+        // Drafts may be partial — only fully validate when actually publishing.
+        if ($status !== 'draft') {
+            $this->conditionService->validate($data);
+        }
 
         $data['vendor_id'] = $vendor->id;
         $data['user_id']   = null;
-        $data['status']    = 'pending';
+        $data['status']    = $status;
 
         $vehicle = $this->repository->create($data);
         $this->syncFeatures($vehicle, $features);
 
-        Log::info('Vehicle listed by vendor', ['vehicle_id' => $vehicle->id, 'vendor_id' => $vendor->id]);
+        Log::info('Vehicle listed by vendor', ['vehicle_id' => $vehicle->id, 'vendor_id' => $vendor->id, 'status' => $status]);
 
-        event(new VehicleCreatedEvent($vehicle));
+        // Only a real submission (not a draft) enters the review pipeline.
+        if ($status !== 'draft') {
+            event(new VehicleCreatedEvent($vehicle));
+        }
 
         return $vehicle;
     }
 
-    public function createForSeller(User $user, array $data): Vehicle
+    public function createForSeller(User $user, array $data, string $status = 'pending'): Vehicle
     {
         $this->tierService->assertCanCreateVehicleForSeller($user);
         $features = $this->pullFeatures($data);
-        $this->conditionService->validate($data);
+        if ($status !== 'draft') {
+            $this->conditionService->validate($data);
+        }
 
         $data['user_id']   = $user->id;
         $data['vendor_id'] = null;
-        $data['status']    = 'pending';
+        $data['status']    = $status;
 
         $vehicle = $this->repository->create($data);
         $this->syncFeatures($vehicle, $features);
 
-        Log::info('Vehicle listed by private seller', ['vehicle_id' => $vehicle->id, 'user_id' => $user->id]);
+        Log::info('Vehicle listed by private seller', ['vehicle_id' => $vehicle->id, 'user_id' => $user->id, 'status' => $status]);
 
-        event(new VehicleCreatedEvent($vehicle));
+        if ($status !== 'draft') {
+            event(new VehicleCreatedEvent($vehicle));
+        }
 
         return $vehicle;
     }
 
-    public function update(Vehicle $vehicle, array $data): Vehicle
+    /**
+     * @param  ?string  $publishAs  'draft' to keep/return to draft, 'pending' to
+     *   submit for review, or null to leave the status rules as-is.
+     */
+    public function update(Vehicle $vehicle, array $data, ?string $publishAs = null): Vehicle
     {
         $features = $this->pullFeatures($data);
-        $this->conditionService->validate($data);
+        if ($publishAs !== 'draft') {
+            $this->conditionService->validate($data);
+        }
 
-        // Resubmitting a rejected vehicle resets to pending for re-review
-        if ($vehicle->isRejected()) {
+        if ($publishAs === 'draft') {
+            $data['status'] = 'draft';
+        } elseif ($publishAs === 'pending' || $vehicle->isDraft() || $vehicle->isRejected()) {
+            // Publishing a draft (or resubmitting a rejected listing) enters review.
             $data['status'] = 'pending';
         }
 
-        $vehicle = $this->repository->update($vehicle, $data);
+        $wasDraft = $vehicle->isDraft();
+        $vehicle  = $this->repository->update($vehicle, $data);
         $this->syncFeatures($vehicle, $features);
+
+        // A draft being published for the first time enters the review pipeline.
+        if ($wasDraft && ($data['status'] ?? null) === 'pending') {
+            event(new VehicleCreatedEvent($vehicle));
+        }
 
         return $vehicle;
     }
