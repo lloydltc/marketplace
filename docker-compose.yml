@@ -10,6 +10,8 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./src:/var/www/html
+      # Keep vendor on a fast container volume, not the slow Windows bind mount.
+      - vendor:/var/www/html/vendor
       - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
     environment:
       - PHP_OPCACHE_VALIDATE_TIMESTAMPS=1
@@ -46,6 +48,8 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./src:/var/www/html
+      # node_modules on a fast container volume (not the Windows bind mount).
+      - node_modules:/var/www/html/node_modules
     ports:
       - "5173:5173"        # Vite HMR port (exposed for browser WS)
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
@@ -100,6 +104,7 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./src:/var/www/html
+      - vendor:/var/www/html/vendor
       - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
     command: php artisan queue:work --sleep=3 --tries=3 --timeout=60
     depends_on:
@@ -126,6 +131,12 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  # Fast container-native volumes for dependencies (avoid slow Windows bind-mount
+  # I/O on the hundreds of files PHP/Node read per request).
+  vendor:
+    driver: local
+  node_modules:
     driver: local
 
 # ─── Networks ─────────────────────────────────────────────────────────────

@@ -41,8 +41,10 @@ use App\Modules\Verification\Events\TierUpgradedEvent;
 use App\Policies\CategoryPolicy;
 use App\Policies\ProductPolicy;
 use App\Policies\VendorPolicy;
+use App\Modules\Vehicles\Models\FeatureDefinition;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -94,5 +96,11 @@ class AppServiceProvider extends ServiceProvider
 
         // TierUpgradedEvent — no listener yet; payment phase will hook in here
         // Event::listen(TierUpgradedEvent::class, ActivatePremiumSubscription::class);
+
+        // D4: the dynamic vehicle feature inputs render on every vehicle form
+        // (vendor + private seller, create + edit) from the admin-managed defs.
+        View::composer('partials.vehicle-form-fields', function ($view) {
+            $view->with('featureDefinitions', FeatureDefinition::active()->ordered()->get());
+        });
     }
 }

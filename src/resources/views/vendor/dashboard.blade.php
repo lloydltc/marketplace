@@ -1,7 +1,10 @@
 <x-layouts.app>
     <x-slot:title>Vendor Dashboard</x-slot:title>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="lg:flex lg:gap-8">
+        <x-vendor-sidebar />
+        <div class="flex-1 min-w-0 mt-6 lg:mt-0">
 
         {{-- Status banner --}}
         @if ($vendor?->isPending())
@@ -77,27 +80,6 @@
             </div>
         </div>
 
-        {{-- Quick links (vendor admin only) --}}
-        @if (Auth::user()->isVendorAdmin())
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-                @foreach ([
-                    ['Products', route('vendor.products.index'), '#1A1A24'],
-                    ['Vehicles', route('vendor.vehicles.index'), '#1A1A24'],
-                    ['Orders', route('vendor.orders.index'), '#1A1A24'],
-                    ['Part Requests', route('vendor.requests.index'), '#3DB8E8'],
-                    ['Wallet', route('vendor.wallet.show'), '#2EBD7A'],
-                    ['Documents', route('vendor.documents.index'), '#F0A820'],
-                    ['Bank Accounts', route('vendor.bank-accounts.index'), '#2EBD7A'],
-                    ['Team', route('vendor.team.index'), '#5A6070'],
-                ] as [$label, $href, $color])
-                    <a href="{{ $href }}"
-                       class="bg-white border border-neutral-200 rounded-xl p-4 text-center hover:border-neutral-400 transition-colors shadow-sm">
-                        <p class="text-sm font-medium text-neutral-700">{{ $label }}</p>
-                    </a>
-                @endforeach
-            </div>
-        @endif
-
         {{-- Listing management --}}
         @if (Auth::user()->isVendorAdmin())
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -120,5 +102,7 @@
             </div>
         @endif
 
+        </div>
+      </div>
     </div>
 </x-layouts.app>

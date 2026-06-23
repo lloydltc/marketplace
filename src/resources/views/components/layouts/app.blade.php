@@ -32,8 +32,8 @@
     $roleLinks = $navUser ? $nav->for($navUser) : [];
 @endphp
 
-{{-- Top navigation --}}
-<nav x-data="{ mobileOpen: false }" class="bg-[#1A1A24] border-b border-[#080810]">
+{{-- Top navigation (sticky — stays put on scroll) --}}
+<nav x-data="{ mobileOpen: false }" class="bg-[#1A1A24] border-b border-[#080810] sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
             <a href="{{ route('home') }}" class="flex items-center gap-3">

@@ -14,8 +14,8 @@
                 'fuelType'      => $vehicle->fuel_type,
                 'offers'        => [
                     '@type'         => 'Offer',
-                    'price'         => (string) $vehicle->price_zwl,
-                    'priceCurrency' => 'ZWL',
+                    'price'         => (string) ($vehicle->price_usd ?? $vehicle->price_zwl),
+                    'priceCurrency' => $vehicle->price_usd !== null ? 'USD' : 'ZWL',
                     'url'           => route('vehicles.show', $vehicle),
                 ],
             ], JSON_UNESCAPED_SLASHES) !!}
@@ -110,6 +110,39 @@
                         @endif
                     </dl>
 
+                    {{-- Features & specs (D4) --}}
+                    @php $featureGroups = $vehicle->groupedFeatures(); @endphp
+                    @if (! empty($featureGroups))
+                        <div class="mt-6 pt-6 border-t border-neutral-100">
+                            <h2 class="text-sm font-semibold text-neutral-700 mb-3">Features &amp; specs</h2>
+                            <div class="space-y-4">
+                                @foreach ($featureGroups as $group => $values)
+                                    <div>
+                                        <h3 class="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-2">{{ $group }}</h3>
+                                        <dl class="grid grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
+                                            @foreach ($values as $fv)
+                                                <div class="flex items-center justify-between gap-2 border-b border-neutral-50 py-1">
+                                                    <dt class="text-neutral-500">{{ $fv->definition->name }}</dt>
+                                                    <dd class="text-neutral-900 font-medium text-right">
+                                                        @if ($fv->definition->type === 'boolean')
+                                                            @if ((int) $fv->value === 1)
+                                                                <span class="text-[#2EBD7A]">✓ Yes</span>
+                                                            @else
+                                                                <span class="text-neutral-400">No</span>
+                                                            @endif
+                                                        @else
+                                                            {{ $fv->display() }}
+                                                        @endif
+                                                    </dd>
+                                                </div>
+                                            @endforeach
+                                        </dl>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                     @if ($vehicle->description)
                         <div class="mt-6 pt-6 border-t border-neutral-100">
                             <h2 class="text-sm font-semibold text-neutral-700 mb-3">Description</h2>
@@ -123,11 +156,11 @@
                 <div class="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 sticky top-6">
                     <div class="mb-4">
                         <div class="text-2xl font-bold text-neutral-900 tabular-nums">
-                            ZWL {{ number_format($vehicle->price_zwl, 2) }}
+                            {{ $vehicle->primaryPrice() }}
                         </div>
-                        @if ($vehicle->price_usd)
+                        @if ($vehicle->secondaryPrice())
                             <div class="text-sm text-neutral-500 tabular-nums mt-0.5">
-                                USD {{ number_format($vehicle->price_usd, 2) }}
+                                {{ $vehicle->secondaryPrice() }}
                             </div>
                         @endif
                     </div>
@@ -159,18 +192,52 @@
                         </div>
                     </div>
 
-                    @auth
-                        <div class="mt-5">
-                            <p class="text-xs text-neutral-400 text-center">Contact functionality coming soon.</p>
+                    {{-- Contact seller (D6): records a lead, then reveals details --}}
+                    <div class="mt-5" x-data="{
+                        url: '{{ route('vehicles.contact', $vehicle) }}',
+                        loading: false, revealed: false, contact: {},
+                        async reveal(kind = 'contact_reveal') {
+                            this.loading = true;
+                            try {
+                                const res = await fetch(this.url, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                                    body: JSON.stringify({ type: kind }),
+                                });
+                                const data = await res.json();
+                                if (data.ok) { this.contact = data.contact; this.revealed = true; }
+                            } finally { this.loading = false; }
+                        },
+                        wa() { return this.contact.phone ? 'https://wa.me/' + this.contact.phone.replace(/[^0-9]/g, '') : '#'; }
+                    }">
+                        <button x-show="!revealed" @click="reveal()" :disabled="loading"
+                                class="block w-full text-center bg-[#F0A820] hover:bg-[#F0A820]/90 text-[#1A1A24] font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors disabled:opacity-60">
+                            <span x-show="!loading">Show contact details</span>
+                            <span x-show="loading" x-cloak>Loading…</span>
+                        </button>
+
+                        <div x-show="revealed" x-cloak class="space-y-2">
+                            <p class="text-sm font-medium text-neutral-900" x-text="contact.name"></p>
+                            <template x-if="contact.phone">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <a :href="'tel:' + contact.phone" @click="reveal('call_click')"
+                                       class="text-center bg-[#2EBD7A] hover:bg-[#2EBD7A]/90 text-white font-semibold px-3 py-2 rounded-lg text-sm">Call</a>
+                                    <a :href="wa()" @click="reveal('whatsapp_click')" target="_blank" rel="noopener"
+                                       class="text-center border border-[#2EBD7A] text-[#2EBD7A] hover:bg-green-50 font-semibold px-3 py-2 rounded-lg text-sm">WhatsApp</a>
+                                </div>
+                            </template>
+                            <template x-if="contact.phone">
+                                <p class="text-sm text-neutral-700 text-center" x-text="contact.phone"></p>
+                            </template>
+                            <template x-if="contact.email">
+                                <a :href="'mailto:' + contact.email" class="block text-sm text-[#3DB8E8] hover:underline text-center" x-text="contact.email"></a>
+                            </template>
                         </div>
-                    @else
-                        <div class="mt-5">
-                            <a href="{{ route('login') }}"
-                               class="block w-full text-center bg-[#F0A820] hover:bg-[#F0A820]/90 text-[#1A1A24] font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors">
-                                Sign in to Contact Seller
-                            </a>
-                        </div>
-                    @endauth
+
+                        <p class="text-[11px] text-neutral-400 mt-2 text-center leading-snug">
+                            By contacting, you agree your details may be shared with the seller.
+                        </p>
+                    </div>
                 </div>
             </div>
 

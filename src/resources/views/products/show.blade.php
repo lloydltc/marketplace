@@ -11,8 +11,8 @@
                 'category' => $product->category?->name,
                 'offers'   => [
                     '@type'         => 'Offer',
-                    'price'         => (string) $product->price_zwl,
-                    'priceCurrency' => 'ZWL',
+                    'price'         => (string) $product->price_usd,
+                    'priceCurrency' => 'USD',
                     'availability'  => $product->isInStock() ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
                     'url'           => route('products.show', $product),
                 ],
@@ -47,14 +47,17 @@
 
                 <h1 class="text-2xl font-semibold text-neutral-900 mb-4">{{ $product->title }}</h1>
 
-                <div class="flex items-baseline gap-4 mb-6">
-                    <span class="text-3xl font-bold text-neutral-900 tabular-nums">
-                        ZWL {{ number_format($product->price_zwl, 2) }}
-                    </span>
-                    @if ($product->price_usd)
-                        <span class="text-lg text-neutral-500 tabular-nums">
-                            USD {{ number_format($product->price_usd, 2) }}
+                <div class="mb-6">
+                    <div class="flex items-baseline gap-4">
+                        <span class="text-3xl font-bold text-neutral-900 tabular-nums">
+                            {{ $product->primaryPrice() }}
                         </span>
+                        <span class="text-lg text-neutral-500 tabular-nums">
+                            ≈ {{ $product->convertedZwl() }}
+                        </span>
+                    </div>
+                    @if ($product->rateLabel())
+                        <p class="text-xs text-neutral-400 mt-1">{{ $product->rateLabel() }}</p>
                     @endif
                 </div>
 

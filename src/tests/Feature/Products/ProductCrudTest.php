@@ -63,7 +63,8 @@ class ProductCrudTest extends TestCase
                 'category_id' => $category->id,
                 'title'       => 'Toyota Hilux Brake Pad Set',
                 'description' => 'OEM quality brake pads for Toyota Hilux 2015-2023 models.',
-                'price_zwl'   => 4500.00,
+                'price_usd'     => 4500.00,
+                'exchange_rate' => 1,
                 'quantity'    => 20,
             ])
             ->assertRedirect();
@@ -94,7 +95,8 @@ class ProductCrudTest extends TestCase
                 'category_id' => $category->id,
                 'title'       => 'Some Product Name Here',
                 'description' => 'A detailed description of the product.',
-                'price_zwl'   => 1000.00,
+                'price_usd'     => 1000.00,
+                'exchange_rate' => 1,
                 'quantity'    => 5,
             ])
             ->assertRedirect();
@@ -118,7 +120,8 @@ class ProductCrudTest extends TestCase
                 'category_id' => $category->id,
                 'title'       => 'Hi',
                 'description' => 'A detailed description of this product listing.',
-                'price_zwl'   => 1000.00,
+                'price_usd'     => 1000.00,
+                'exchange_rate' => 1,
                 'quantity'    => 5,
             ])
             ->assertSessionHasErrors('title');

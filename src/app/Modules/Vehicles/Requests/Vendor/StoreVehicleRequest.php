@@ -16,7 +16,7 @@ class StoreVehicleRequest extends FormRequest
 
     public function rules(): array
     {
-        return array_merge($this->vehicleRules(), $this->imageUploadRules());
+        return array_merge($this->vehicleRules(), $this->imageUploadRules(), $this->featureRules());
     }
 
     public function messages(): array

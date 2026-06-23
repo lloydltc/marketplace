@@ -62,6 +62,9 @@ RUN addgroup -g 1000 -S www \
     && adduser -u 1000 -S www -G www \
     && mkdir -p /var/log/supervisor \
     && mkdir -p /var/run \
+    # Pre-create the dirs that get overlaid by named volumes (docker-compose),
+    # so the empty volumes seed as www-owned and composer/npm can write to them.
+    && mkdir -p /var/www/html/vendor /var/www/html/node_modules \
     && chown -R www:www /var/log/supervisor \
     && chown -R www:www /var/run \
     && chown -R www:www /var/www/html

@@ -11,7 +11,7 @@
         <p class="text-neutral-400 text-base max-w-md mx-auto mb-8">
             Browse thousands of vehicles, parts, and accessories from verified dealers and private sellers.
         </p>
-        <form method="GET" action="{{ route('products.index') }}"
+        <form method="GET" action="{{ route('search.index') }}"
               class="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
             <input type="text" name="q" placeholder="Search vehicles, parts, accessories…"
                    class="flex-1 w-full bg-white border-0 rounded-lg px-4 py-3 text-neutral-900 placeholder-neutral-400 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]">
@@ -36,10 +36,8 @@
                 @foreach ($vehicles as $vehicle)
                     <a href="{{ route('vehicles.show', $vehicle) }}"
                        class="group bg-white border border-neutral-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
-                        <div class="aspect-video bg-neutral-100 flex items-center justify-center text-neutral-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 17H5a2 2 0 01-2-2v-4l2-5h10l2 5v4a2 2 0 01-2 2h-3m-4 0h4m-4 0v-4h4v4" />
-                            </svg>
+                        <div class="aspect-video bg-neutral-100 flex items-center justify-center overflow-hidden">
+                            <x-listing-thumbnail :cover="$vehicle->coverImage()" :alt="$vehicle->displayTitle()" type="vehicle" />
                         </div>
                         <div class="p-4 flex flex-col flex-1">
                             @if ($vehicle->isFeatured())
@@ -49,7 +47,7 @@
                                 {{ $vehicle->displayTitle() }}
                             </h3>
                             <div class="mt-auto text-base font-bold text-neutral-900 tabular-nums">
-                                ZWL {{ number_format($vehicle->price_zwl, 2) }}
+                                {{ $vehicle->primaryPrice() }}
                             </div>
                         </div>
                     </a>
@@ -72,14 +70,16 @@
                 @foreach ($products as $product)
                     <a href="{{ route('products.show', $product) }}"
                        class="bg-white border border-neutral-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
-                        <div class="bg-neutral-100 h-40 flex items-center justify-center text-neutral-300 text-3xl">🔧</div>
+                        <div class="bg-neutral-100 h-40 flex items-center justify-center overflow-hidden">
+                            <x-listing-thumbnail :cover="$product->coverImage()" :alt="$product->title" type="product" />
+                        </div>
                         <div class="p-4">
                             <div class="text-xs text-neutral-400 mb-1">{{ $product->category?->name }}</div>
                             <h3 class="text-sm font-semibold text-neutral-900 line-clamp-2 group-hover:text-[#F0A820] transition-colors">
                                 {{ $product->title }}
                             </h3>
                             <div class="mt-3 text-sm font-bold text-neutral-900 tabular-nums">
-                                ZWL {{ number_format($product->price_zwl, 2) }}
+                                {{ $product->primaryPrice() }}
                             </div>
                             <div class="mt-1 text-xs text-neutral-400">{{ $product->vendor?->name }}</div>
                         </div>

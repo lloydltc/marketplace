@@ -79,7 +79,7 @@ class ProductRepository implements ProductRepositoryInterface
         $query = $this->model->query()
             ->active()
             ->inStock()
-            ->with(['vendor', 'category']);
+            ->with(['vendor', 'category', 'images']);
 
         if (! empty($filters['category_id'])) {
             $query->where('category_id', $filters['category_id']);

@@ -49,6 +49,13 @@ class RfqController extends Controller
 
         $partRequest = $this->rfq->createRequest($request->user(), $validated);
 
+        // D6: an RFQ is a lead (buyer reaching the market for a part).
+        app(\App\Modules\Leads\Services\LeadService::class)->record('rfq', $partRequest, [
+            'buyer'   => $request->user(),
+            'message' => $validated['part_description'],
+            'ip'      => $request->ip(),
+        ]);
+
         // High-value requests require a refundable commitment deposit (only when
         // thresholds are enabled — off at launch).
         if ($this->thresholds->requiresDeposit((float) ($validated['estimated_value'] ?? 0))) {

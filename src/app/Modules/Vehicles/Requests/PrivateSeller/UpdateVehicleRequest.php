@@ -16,7 +16,7 @@ class UpdateVehicleRequest extends FormRequest
 
     public function rules(): array
     {
-        $rules = $this->vehicleRules();
+        $rules = array_merge($this->vehicleRules(), $this->featureRules());
 
         $vehicleId = $this->route('vehicle')?->id;
         if ($vehicleId) {

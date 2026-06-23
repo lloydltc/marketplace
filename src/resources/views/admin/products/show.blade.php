@@ -53,15 +53,14 @@
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <dt class="text-neutral-500 text-xs uppercase tracking-wide mb-1">Price ZWL</dt>
-                                <dd class="text-neutral-900 font-semibold tabular-nums">ZWL {{ number_format($product->price_zwl, 2) }}</dd>
-                            </div>
-                            @if ($product->price_usd)
-                            <div>
                                 <dt class="text-neutral-500 text-xs uppercase tracking-wide mb-1">Price USD</dt>
-                                <dd class="text-neutral-900 font-semibold tabular-nums">USD {{ number_format($product->price_usd, 2) }}</dd>
+                                <dd class="text-neutral-900 font-semibold tabular-nums">{{ $product->primaryPrice() }}</dd>
                             </div>
-                            @endif
+                            <div>
+                                <dt class="text-neutral-500 text-xs uppercase tracking-wide mb-1">Price ZWL <span class="normal-case text-neutral-400">(derived)</span></dt>
+                                <dd class="text-neutral-900 font-semibold tabular-nums">{{ $product->convertedZwl() }}</dd>
+                                @if ($product->rateLabel())<dd class="text-xs text-neutral-400">{{ $product->rateLabel() }}</dd>@endif
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">

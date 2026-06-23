@@ -37,6 +37,10 @@ Route::get('orders', [VendorOrderController::class, 'index'])->name('orders.inde
 Route::get('orders/{order}', [VendorOrderController::class, 'show'])->name('orders.show');
 Route::post('orders/{order}/transition', [VendorOrderController::class, 'transition'])->name('orders.transition');
 
+// Leads (D6 — buyers who contacted the vendor about a listing)
+Route::get('leads', [\App\Http\Controllers\LeadController::class, 'vendorIndex'])->name('leads.index');
+Route::put('leads/{lead}', [\App\Http\Controllers\LeadController::class, 'update'])->name('leads.update');
+
 // RFQ — browse open part requests and quote
 Route::get('requests', [VendorRfqController::class, 'index'])->name('requests.index');
 Route::post('requests/{partRequest}/quote', [VendorRfqController::class, 'quote'])->name('requests.quote');
@@ -48,6 +52,7 @@ Route::middleware('role:vendor_admin')->group(function () {
     Route::get('vehicles/{vehicle}/edit', [VendorVehicleController::class, 'edit'])->name('vehicles.edit');
     Route::put('vehicles/{vehicle}', [VendorVehicleController::class, 'update'])->name('vehicles.update');
     Route::delete('vehicles/{vehicle}', [VendorVehicleController::class, 'destroy'])->name('vehicles.destroy');
+    Route::post('vehicles/{vehicle}/renew', [VendorVehicleController::class, 'renew'])->name('vehicles.renew');
 
     // Vehicle image management
     Route::post('vehicles/{vehicle}/images', [VendorVehicleImageController::class, 'store'])->middleware('throttle:60,1')->name('vehicles.images.store');

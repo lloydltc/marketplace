@@ -8,6 +8,7 @@ use App\Modules\Vehicles\Events\VehicleApprovedEvent;
 use App\Modules\Vehicles\Events\VehicleCreatedEvent;
 use App\Modules\Vehicles\Events\VehicleRejectedEvent;
 use App\Modules\Vehicles\Models\Vehicle;
+use App\Modules\Vehicles\Models\VehicleFeatureValue;
 use App\Modules\Vehicles\Repositories\VehicleRepositoryInterface;
 use App\Modules\Verification\Services\TierService;
 use App\Modules\Wallet\Services\WalletService;
@@ -20,12 +21,14 @@ class VehicleService
         private readonly VehicleConditionService $conditionService,
         private readonly TierService $tierService,
         private readonly WalletService $wallet,
+        private readonly \App\Modules\Settings\Services\SettingsService $settings,
     ) {}
 
     public function createForVendor(Vendor $vendor, array $data): Vehicle
     {
         $this->wallet->assertCanList($vendor);
         $this->tierService->assertCanCreateVehicleForVendor($vendor);
+        $features = $this->pullFeatures($data);
         $this->conditionService->validate($data);
 
         $data['vendor_id'] = $vendor->id;
@@ -33,6 +36,7 @@ class VehicleService
         $data['status']    = 'pending';
 
         $vehicle = $this->repository->create($data);
+        $this->syncFeatures($vehicle, $features);
 
         Log::info('Vehicle listed by vendor', ['vehicle_id' => $vehicle->id, 'vendor_id' => $vendor->id]);
 
@@ -44,6 +48,7 @@ class VehicleService
     public function createForSeller(User $user, array $data): Vehicle
     {
         $this->tierService->assertCanCreateVehicleForSeller($user);
+        $features = $this->pullFeatures($data);
         $this->conditionService->validate($data);
 
         $data['user_id']   = $user->id;
@@ -51,6 +56,7 @@ class VehicleService
         $data['status']    = 'pending';
 
         $vehicle = $this->repository->create($data);
+        $this->syncFeatures($vehicle, $features);
 
         Log::info('Vehicle listed by private seller', ['vehicle_id' => $vehicle->id, 'user_id' => $user->id]);
 
@@ -61,6 +67,7 @@ class VehicleService
 
     public function update(Vehicle $vehicle, array $data): Vehicle
     {
+        $features = $this->pullFeatures($data);
         $this->conditionService->validate($data);
 
         // Resubmitting a rejected vehicle resets to pending for re-review
@@ -68,16 +75,98 @@ class VehicleService
             $data['status'] = 'pending';
         }
 
-        return $this->repository->update($vehicle, $data);
+        $vehicle = $this->repository->update($vehicle, $data);
+        $this->syncFeatures($vehicle, $features);
+
+        return $vehicle;
+    }
+
+    /** Extract the dynamic feature map from request data so it isn't mass-assigned. */
+    private function pullFeatures(array &$data): ?array
+    {
+        if (! array_key_exists('features', $data)) {
+            return null; // not submitted → leave existing values untouched
+        }
+
+        $features = $data['features'] ?? [];
+        unset($data['features']);
+
+        return is_array($features) ? $features : [];
+    }
+
+    /**
+     * Persist dynamic feature values. A blank value clears that feature; a null
+     * $features (not submitted) leaves existing values untouched.
+     *
+     * @param  array<string, mixed>|null  $features  [definition_id => value]
+     */
+    private function syncFeatures(Vehicle $vehicle, ?array $features): void
+    {
+        if ($features === null) {
+            return;
+        }
+
+        foreach ($features as $definitionId => $value) {
+            $value = is_string($value) ? trim($value) : $value;
+
+            if ($value === null || $value === '') {
+                VehicleFeatureValue::where('vehicle_id', $vehicle->id)
+                    ->where('feature_definition_id', $definitionId)->delete();
+                continue;
+            }
+
+            VehicleFeatureValue::updateOrCreate(
+                ['vehicle_id' => $vehicle->id, 'feature_definition_id' => $definitionId],
+                ['value' => (string) $value],
+            );
+        }
     }
 
     public function approve(Vehicle $vehicle, User $admin): void
     {
-        $this->repository->update($vehicle, ['status' => 'active']);
+        // D5: publishing starts the lead-gen expiry clock (config-driven).
+        $this->repository->update($vehicle, array_merge(
+            ['status' => 'active'],
+            $this->lifecycleOnPublish(),
+        ));
 
         Log::info('Vehicle approved', ['vehicle_id' => $vehicle->id, 'by' => $admin->id]);
 
         event(new VehicleApprovedEvent($vehicle->refresh()));
+    }
+
+    /**
+     * D5: renew an expired (or active) vehicle listing — resets the expiry clock,
+     * stamps renewed_at, increments the count, returns it to active. Free at
+     * launch (renewal fee hook lives in platform_settings).
+     */
+    public function renew(Vehicle $vehicle): Vehicle
+    {
+        $days = max(1, $this->settings->getInt('listings.vehicle_expiry_days', 60));
+
+        $vehicle = $this->repository->update($vehicle, [
+            'status'       => 'active',
+            'published_at' => $vehicle->published_at ?? now(),
+            'expires_at'   => now()->addDays($days),
+            'renewed_at'   => now(),
+            'expiry_count' => ($vehicle->expiry_count ?? 0) + 1,
+        ]);
+
+        Log::info('Vehicle listing renewed', ['vehicle_id' => $vehicle->id, 'count' => $vehicle->expiry_count]);
+
+        return $vehicle;
+    }
+
+    /** @return array{published_at?: \Illuminate\Support\Carbon, expires_at?: \Illuminate\Support\Carbon} */
+    private function lifecycleOnPublish(): array
+    {
+        if (! $this->settings->getBool('listings.vehicle_expiry_enabled', true)) {
+            return ['published_at' => now()];
+        }
+
+        $days = max(1, $this->settings->getInt('listings.vehicle_expiry_days', 60));
+
+        return ['published_at' => now(), 'expires_at' => now()->addDays($days)];
     }
 
     public function reject(Vehicle $vehicle, User $admin, string $reason): void

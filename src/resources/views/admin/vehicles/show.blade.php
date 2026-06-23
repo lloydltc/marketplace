@@ -79,10 +79,12 @@
                             <dd class="text-neutral-900 font-mono">{{ $vehicle->vin }}</dd>
                         </div>
                         @endif
+                        @if ($vehicle->hasZwl())
                         <div>
                             <dt class="text-xs text-neutral-500 uppercase tracking-wide mb-1">Price ZWL</dt>
                             <dd class="font-semibold text-neutral-900 tabular-nums">ZWL {{ number_format($vehicle->price_zwl, 2) }}</dd>
                         </div>
+                        @endif
                         @if ($vehicle->price_usd)
                         <div>
                             <dt class="text-xs text-neutral-500 uppercase tracking-wide mb-1">Price USD</dt>

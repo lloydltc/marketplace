@@ -78,32 +78,39 @@
             <div class="bg-white border border-neutral-200 rounded-xl shadow-sm p-6 space-y-5">
                 <h2 class="text-base font-semibold text-neutral-800">Pricing & Inventory</h2>
 
+                <div x-data="{ usd: {{ old('price_usd', 0) }}, rate: {{ old('exchange_rate', 0) }} }">
+                <p class="text-sm text-neutral-500 mb-4">Price in USD and set your USD→ZWL rate. The ZWL price buyers pay is calculated automatically.</p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
-                        <label for="price_zwl" class="block text-sm font-medium text-neutral-700 mb-1">Price ZWL <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-2 text-sm text-neutral-400">ZWL</span>
-                            <input type="number" id="price_zwl" name="price_zwl" value="{{ old('price_zwl') }}"
-                                   step="0.01" min="0.01" required
-                                   class="w-full pl-12 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40 @error('price_zwl') border-red-400 @enderror">
-                        </div>
-                        @error('price_zwl')
-                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label for="price_usd" class="block text-sm font-medium text-neutral-700 mb-1">Price USD <span class="text-neutral-400 font-normal">(optional)</span></label>
+                        <label for="price_usd" class="block text-sm font-medium text-neutral-700 mb-1">Price USD <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <span class="absolute left-3 top-2 text-sm text-neutral-400">USD</span>
-                            <input type="number" id="price_usd" name="price_usd" value="{{ old('price_usd') }}"
-                                   step="0.01" min="0.01"
+                            <input type="number" id="price_usd" name="price_usd" value="{{ old('price_usd') }}" x-model.number="usd"
+                                   step="0.01" min="0.01" required
                                    class="w-full pl-12 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40 @error('price_usd') border-red-400 @enderror">
                         </div>
                         @error('price_usd')
                             <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    <div>
+                        <label for="exchange_rate" class="block text-sm font-medium text-neutral-700 mb-1">USD → ZWL rate <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2 text-sm text-neutral-400">×</span>
+                            <input type="number" id="exchange_rate" name="exchange_rate" value="{{ old('exchange_rate') }}" x-model.number="rate"
+                                   step="0.0001" min="0.0001" required placeholder="e.g. 36.5"
+                                   class="w-full pl-9 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40 @error('exchange_rate') border-red-400 @enderror">
+                        </div>
+                        @error('exchange_rate')
+                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+                <div class="mt-2 text-sm text-neutral-600" x-show="usd > 0 && rate > 0" x-cloak>
+                    Buyers pay <span class="font-semibold text-neutral-900" x-text="'ZWL ' + (usd * rate).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})"></span>
+                    <span class="text-neutral-400">(1 USD = <span x-text="rate"></span> ZWL)</span>
+                </div>
                 </div>
 
                 <div class="max-w-xs">

@@ -53,6 +53,11 @@ class PlatformSettingsSeeder extends Seeder
             // Seller verification gating (remediation R4)
             ['sellers.unverified_can_transact', '0', 'boolean', 'sellers', 'Allow listings from unverified/pending sellers to be purchased. Off = display-only (visible with an Unverified badge, but buying disabled) until approved.'],
 
+            // Listing lifecycle (D5) — vehicles are lead-gen and time-bound.
+            ['listings.vehicle_expiry_enabled', '1', 'boolean', 'listings', 'Expire vehicle listings after the configured period. Off = listings never expire.'],
+            ['listings.vehicle_expiry_days', '60', 'integer', 'listings', 'Days a vehicle listing stays live before expiring (renewable).'],
+            ['listings.vehicle_renewal_fee', '0.00', 'decimal', 'listings', 'Price (USD) to renew an expired vehicle listing. 0 = free renewal (launch default).'],
+
             // COD matrix rollout flags (§3, §10)
             ['cod.fbs_enabled', '1', 'boolean', 'cod', 'Allow cash on delivery for Fulfilled-by-Salma orders.'],
             ['cod.vf_enabled', '0', 'boolean', 'cod', 'Allow cash on delivery for vendor-fulfilled orders. Launch OFF (enable after wallet floor enforcement is live).'],

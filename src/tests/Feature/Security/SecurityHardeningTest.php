@@ -30,16 +30,26 @@ class SecurityHardeningTest extends TestCase
 
     // ─── Security headers ─────────────────────────────────────────────────────────
 
-    public function test_security_headers_present_on_web_response(): void
+    public function test_baseline_security_headers_present_on_web_response(): void
     {
         $res = $this->get(route('home'))->assertOk();
 
         $res->assertHeader('X-Content-Type-Options', 'nosniff');
         $res->assertHeader('X-Frame-Options', 'SAMEORIGIN');
         $res->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-        $this->assertNotNull($res->headers->get('Content-Security-Policy'));
-        $this->assertStringContainsString("default-src 'self'", $res->headers->get('Content-Security-Policy'));
-        $this->assertStringContainsString("object-src 'none'", $res->headers->get('Content-Security-Policy'));
+    }
+
+    public function test_csp_is_enforced_in_production_only(): void
+    {
+        // Outside production (incl. dev), CSP is intentionally NOT set so the
+        // cross-origin Vite dev server + HMR work. In production it is enforced.
+        $this->get(route('home'))->assertOk()
+            ->assertHeaderMissing('Content-Security-Policy');
+
+        app()->detectEnvironment(fn () => 'production');
+        $res = $this->get(route('home'))->assertOk();
+        $this->assertStringContainsString("default-src 'self'", (string) $res->headers->get('Content-Security-Policy'));
+        $this->assertStringContainsString("object-src 'none'", (string) $res->headers->get('Content-Security-Policy'));
     }
 
     // ─── Bank details encrypted at rest ─────────────────────────────────────────────

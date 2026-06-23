@@ -70,7 +70,7 @@
                                     <span class="text-xs capitalize text-neutral-600">{{ $vehicle->condition }}</span>
                                 </td>
                                 <td class="px-4 py-3 text-right tabular-nums hidden sm:table-cell">
-                                    {{ number_format($vehicle->price_zwl, 2) }}
+                                    {{ $vehicle->primaryPrice() }}
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     @php
@@ -85,12 +85,18 @@
                                         {{ ucfirst($vehicle->status) }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 text-right space-x-3">
+                                <td class="px-4 py-3 text-right space-x-3 whitespace-nowrap">
                                     <a href="{{ route('seller.vehicles.show', $vehicle) }}"
                                        class="text-sm text-neutral-500 hover:text-neutral-700">View</a>
                                     @if ($vehicle->canBeEdited())
                                         <a href="{{ route('seller.vehicles.edit', $vehicle) }}"
                                            class="text-sm text-[#3DB8E8] hover:underline">Edit</a>
+                                    @endif
+                                    @if ($vehicle->isExpired())
+                                        <form method="POST" action="{{ route('seller.vehicles.renew', $vehicle) }}" class="inline">
+                                            @csrf
+                                            <button type="submit" class="text-sm font-medium text-[#2EBD7A] hover:underline">Renew</button>
+                                        </form>
                                     @endif
                                 </td>
                             </tr>

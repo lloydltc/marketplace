@@ -124,4 +124,15 @@ class VehicleController extends Controller
             ->route('vendor.vehicles.index')
             ->with('status', 'Vehicle listing deleted.');
     }
+
+    public function renew(Request $request, Vehicle $vehicle): RedirectResponse
+    {
+        $vendor = $request->attributes->get('vendor');
+        abort_if($vendor === null, 404);
+        abort_unless($vehicle->vendor_id === $vendor->id, 403);
+
+        $this->service->renew($vehicle);
+
+        return back()->with('status', 'Listing renewed — it’s live again.');
+    }
 }

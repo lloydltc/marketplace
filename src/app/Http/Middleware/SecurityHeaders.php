@@ -28,18 +28,26 @@ class SecurityHeaders
 
         // Content-Security-Policy: lock script/style/connect to self (+ the inline
         // bootstrap this app relies on) and allow images from self/data/https.
-        $headers['Content-Security-Policy'] = implode('; ', [
-            "default-src 'self'",
-            "script-src 'self' 'unsafe-inline'",
-            "style-src 'self' 'unsafe-inline'",
-            "img-src 'self' data: https:",
-            "font-src 'self' data:",
-            "connect-src 'self'",
-            "frame-ancestors 'self'",
-            "base-uri 'self'",
-            "form-action 'self'",
-            "object-src 'none'",
-        ]);
+        //
+        // Only enforced in production. In local/dev, assets + HMR are served from
+        // the Vite dev server on a different origin (localhost:5173, ws://…), which
+        // a 'self'-scoped CSP would block — so we skip CSP outside production to
+        // avoid breaking the dev asset pipeline. (Prod serves built same-origin
+        // assets, where the strict policy applies cleanly.)
+        if (app()->environment('production')) {
+            $headers['Content-Security-Policy'] = implode('; ', [
+                "default-src 'self'",
+                "script-src 'self' 'unsafe-inline'",
+                "style-src 'self' 'unsafe-inline'",
+                "img-src 'self' data: https:",
+                "font-src 'self' data:",
+                "connect-src 'self'",
+                "frame-ancestors 'self'",
+                "base-uri 'self'",
+                "form-action 'self'",
+                "object-src 'none'",
+            ]);
+        }
 
         // HSTS only on secure connections (avoid pinning HTTP in dev).
         if ($request->secure()) {

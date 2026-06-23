@@ -41,8 +41,8 @@
                     {{ ucfirst($vehicle->fuel_type) }} &bull;
                     {{ number_format($vehicle->mileage) }} km
                 </div>
-                <div class="price">ZWL {{ number_format($vehicle->price_zwl, 2) }}
-                    @if ($vehicle->price_usd) &nbsp;/&nbsp; USD {{ number_format($vehicle->price_usd, 2) }}@endif
+                <div class="price">{{ $vehicle->primaryPrice() }}
+                    @if ($vehicle->secondaryPrice()) &nbsp;/&nbsp; {{ $vehicle->secondaryPrice() }}@endif
                 </div>
             </div>
 

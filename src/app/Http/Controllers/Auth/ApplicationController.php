@@ -64,11 +64,12 @@ class ApplicationController extends Controller
     public function storeSeller(SellerApplicationRequest $request): RedirectResponse
     {
         $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'password' => $request->password,
-            'role'     => 'private_seller',
-            'status'   => 'pending',
+            'name'          => $request->name,
+            'email'         => $request->email,
+            'contact_phone' => $request->phone,
+            'password'      => $request->password,
+            'role'          => 'private_seller',
+            'status'        => 'pending',
         ]);
 
         $user->assignRole('private_seller');

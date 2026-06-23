@@ -62,7 +62,9 @@ class VehicleRepository implements VehicleRepositoryInterface
     {
         $query = $this->model->query()
             ->active()
-            ->with(['make', 'vehicleModel', 'vendor', 'seller']);
+            // D5: hide listings whose expiry has lapsed but the sweep job hasn't run yet.
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->with(['make', 'vehicleModel', 'vendor', 'seller', 'images']);
 
         $this->applyCommonFilters($query, $filters);
 
@@ -195,6 +197,19 @@ class VehicleRepository implements VehicleRepositoryInterface
 
         if (! empty($filters['condition'])) {
             $query->where('condition', $filters['condition']);
+        }
+
+        // Dynamic feature facets (D3 + D4). features = [definition_id => value].
+        // Each provided facet AND-narrows the results via the indexed value table.
+        if (! empty($filters['features']) && is_array($filters['features'])) {
+            foreach ($filters['features'] as $definitionId => $value) {
+                if ($value === null || $value === '') {
+                    continue;
+                }
+                $query->whereHas('featureValues', function ($q) use ($definitionId, $value) {
+                    $q->where('feature_definition_id', $definitionId)->where('value', (string) $value);
+                });
+            }
         }
     }
 }

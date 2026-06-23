@@ -151,6 +151,8 @@ No online checkout for vehicles. Monetize visibility:
 
 All purchasable via the gateway; promotion state (featured_until, bumped_at, package) lives on the listing.
 
+**Listing lifecycle (D5):** vehicle listings are lead-gen and time-bound — they publish on approval and **expire** after `listings.vehicle_expiry_days` (default 60), dropping out of the public catalogue/search but staying on the seller dashboard with a **Renew** action. Renewal is **free at launch** (`listings.vehicle_renewal_fee = 0`) per §10 ("don't charge too early") — the fee is a wired monetisation hook to flip later, optionally bundled with a featured/bump upsell at renewal. Sellers get reminder emails 7 and 1 days before expiry. Expiry is config-gated (`listings.vehicle_expiry_enabled`) and applies to vehicles only; parts are stock-based and don't expire.
+
 ---
 
 ## 9. Default Pricing Schedule (all tunable in `platform_settings`)

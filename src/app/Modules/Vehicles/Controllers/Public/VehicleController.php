@@ -31,12 +31,14 @@ class VehicleController extends Controller
             'transmission' => $request->input('transmission'),
             'fuel_type'    => $request->input('fuel_type'),
             'condition'    => $request->input('condition'),
+            'features'     => $request->input('features', []),
             'sort'         => $request->input('sort', 'latest'),
         ]);
 
         $makes = $this->makeRepository->allWithModels();
+        $filterableFeatures = \App\Modules\Vehicles\Models\FeatureDefinition::filterable()->ordered()->get();
 
-        return view('vehicles.index', compact('vehicles', 'makes'));
+        return view('vehicles.index', compact('vehicles', 'makes', 'filterableFeatures'));
     }
 
     public function show(Vehicle $vehicle): View
@@ -46,6 +48,7 @@ class VehicleController extends Controller
         $vehicle->load([
             'make', 'vehicleModel', 'vendor', 'seller',
             'images' => fn ($q) => $q->whereNotNull('processed_at')->orderBy('display_order'),
+            'featureValues.definition',
         ]);
 
         return view('vehicles.show', compact('vehicle'));

@@ -49,6 +49,13 @@ Route::get('products/{product}', [PublicProductController::class, 'show'])->name
 Route::get('vehicles', [PublicVehicleController::class, 'index'])->name('vehicles.index');
 Route::get('vehicles/{vehicle}', [PublicVehicleController::class, 'show'])->name('vehicles.show');
 
+// D6: record a contact/lead and reveal seller details (public, guest-friendly, rate-limited)
+Route::post('vehicles/{vehicle}/contact', [\App\Http\Controllers\ListingContactController::class, 'vehicle'])
+    ->middleware('throttle:20,1')->name('vehicles.contact');
+
+// Unified public search results (products + vehicles) — D2
+Route::get('search', [SearchController::class, 'index'])->name('search.index');
+
 // Public search autocomplete (JSON)
 Route::get('search/products', [SearchController::class, 'products'])->name('search.products');
 Route::get('search/vehicles', [SearchController::class, 'vehicles'])->name('search.vehicles');

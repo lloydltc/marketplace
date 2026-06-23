@@ -74,7 +74,7 @@
                                     <span class="text-xs capitalize text-neutral-600">{{ $vehicle->condition }}</span>
                                 </td>
                                 <td class="px-4 py-3 text-right tabular-nums hidden sm:table-cell">
-                                    {{ number_format($vehicle->price_zwl, 2) }}
+                                    {{ $vehicle->primaryPrice() }}
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     @php

@@ -48,6 +48,11 @@ class Vehicle extends Model
         'bumped_at',
         'listing_package_id',
         'seller_verified_badge',
+        // D5 lifecycle
+        'published_at',
+        'expires_at',
+        'renewed_at',
+        'expiry_count',
     ];
 
     protected function casts(): array
@@ -63,6 +68,10 @@ class Vehicle extends Model
             'featured_until'        => 'datetime',
             'bumped_at'             => 'datetime',
             'seller_verified_badge' => 'boolean',
+            'published_at'          => 'datetime',
+            'expires_at'            => 'datetime',
+            'renewed_at'            => 'datetime',
+            'expiry_count'          => 'integer',
         ];
     }
 
@@ -107,9 +116,38 @@ class Vehicle extends Model
         return $this->hasMany(VehicleImage::class)->orderBy('display_order');
     }
 
+    /** First image by display order. Uses the loaded `images` relation when
+     *  eager-loaded (avoids N+1 on listing/landing pages). */
     public function coverImage(): ?VehicleImage
     {
-        return $this->images()->first();
+        return $this->images->first();
+    }
+
+    // ─── Dynamic features (D4) ──────────────────────────────────────────────────
+
+    public function featureValues(): HasMany
+    {
+        return $this->hasMany(VehicleFeatureValue::class);
+    }
+
+    /** The stored value for a feature definition id, or null (uses loaded relation). */
+    public function featureValueFor(string $definitionId): ?VehicleFeatureValue
+    {
+        return $this->featureValues->firstWhere('feature_definition_id', $definitionId);
+    }
+
+    /**
+     * Feature values grouped by their definition's display group, for the buyer
+     * spec sheet. Returns [group => [VehicleFeatureValue, …]].
+     */
+    public function groupedFeatures(): array
+    {
+        return $this->featureValues
+            ->filter(fn ($fv) => $fv->definition !== null && $fv->definition->is_active)
+            ->sortBy(fn ($fv) => [$fv->definition->group, $fv->definition->sort_order, $fv->definition->name])
+            ->groupBy(fn ($fv) => $fv->definition->group ?: 'Features')
+            ->map(fn ($g) => $g->values()->all())
+            ->all();
     }
 
     // ─── Scopes ───────────────────────────────────────────────────────────────
@@ -166,6 +204,42 @@ class Vehicle extends Model
         return $this->status === 'inactive';
     }
 
+    // ─── Lifecycle (D5) ─────────────────────────────────────────────────────────
+
+    public function isExpired(): bool
+    {
+        return $this->status === 'expired';
+    }
+
+    /** Active listing whose expiry time has passed (awaiting the sweep job). */
+    public function hasLapsed(): bool
+    {
+        return $this->expires_at !== null && $this->expires_at->isPast();
+    }
+
+    public function scopeExpiringBetween(Builder $query, \DateTimeInterface $from, \DateTimeInterface $to): Builder
+    {
+        return $query->where('status', 'active')->whereBetween('expires_at', [$from, $to]);
+    }
+
+    /** The user to notify about this listing (private seller, or the vendor's admin). */
+    public function ownerUser(): ?\App\Models\User
+    {
+        return $this->user_id !== null
+            ? $this->seller
+            : $this->vendor?->users()->wherePivot('vendor_role', 'admin')->first();
+    }
+
+    /** Seller contact details revealed to a buyer on contact (D6). */
+    public function contactDetails(): array
+    {
+        if ($this->vendor_id !== null) {
+            return ['name' => $this->vendor?->name, 'phone' => $this->vendor?->phone, 'email' => $this->vendor?->contact_email];
+        }
+
+        return ['name' => $this->seller?->name, 'phone' => $this->seller?->contact_phone, 'email' => $this->seller?->email];
+    }
+
     public function canBeEdited(): bool
     {
         return in_array($this->status, ['pending', 'inactive', 'rejected'], true);
@@ -187,6 +261,41 @@ class Vehicle extends Model
         $model = $this->vehicleModel?->name ?? 'Unknown';
 
         return "{$this->year} {$make} {$model}";
+    }
+
+    // ─── Pricing (either currency; sellers aren't forced to price in ZWL) ────────
+
+    public function hasUsd(): bool
+    {
+        return $this->price_usd !== null;
+    }
+
+    public function hasZwl(): bool
+    {
+        return $this->price_zwl !== null;
+    }
+
+    /** Primary price line — USD preferred when present, else ZWL. */
+    public function primaryPrice(): string
+    {
+        if ($this->price_usd !== null) {
+            return 'USD ' . number_format((float) $this->price_usd, 2);
+        }
+        if ($this->price_zwl !== null) {
+            return 'ZWL ' . number_format((float) $this->price_zwl, 2);
+        }
+
+        return 'Price on request';
+    }
+
+    /** Secondary price line (the other currency) when both are set, else null. */
+    public function secondaryPrice(): ?string
+    {
+        if ($this->price_usd !== null && $this->price_zwl !== null) {
+            return 'ZWL ' . number_format((float) $this->price_zwl, 2);
+        }
+
+        return null;
     }
 
     // ─── Promotion (Phase 7R — lead-gen monetisation, BUSINESS_MODEL.md §8) ─────

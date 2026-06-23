@@ -22,3 +22,7 @@ Schedule::command('rfq:expire')->dailyAt('02:30');
 
 // Lapse expired dealer package subscriptions.
 Schedule::command('promotions:expire')->dailyAt('02:45');
+
+// D5: remind sellers before their vehicle listings lapse, then sweep expired ones.
+Schedule::command('vehicles:expiry-reminders')->dailyAt('08:00');
+Schedule::command('vehicles:expire')->dailyAt('04:00');

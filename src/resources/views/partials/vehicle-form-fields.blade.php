@@ -151,30 +151,72 @@
 <div class="bg-white border border-neutral-200 rounded-xl shadow-sm p-6 space-y-5">
     <h2 class="text-base font-semibold text-neutral-800">Pricing</h2>
 
+    <p class="text-sm text-neutral-500 -mb-2">Enter a price in USD, ZWL, or both — at least one is required.</p>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
-            <label for="price_zwl" class="block text-sm font-medium text-neutral-700 mb-1">Price ZWL <span class="text-red-500">*</span></label>
-            <div class="relative">
-                <span class="absolute left-3 top-2 text-sm text-neutral-400">ZWL</span>
-                <input type="number" id="price_zwl" name="price_zwl"
-                       value="{{ old('price_zwl', $v?->price_zwl) }}"
-                       step="0.01" min="1" required
-                       class="w-full pl-12 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40 @error('price_zwl') border-red-400 @enderror">
-            </div>
-            @error('price_zwl')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
-        </div>
-
-        <div>
-            <label for="price_usd" class="block text-sm font-medium text-neutral-700 mb-1">Price USD <span class="text-neutral-400 font-normal">(optional)</span></label>
+            <label for="price_usd" class="block text-sm font-medium text-neutral-700 mb-1">Price USD</label>
             <div class="relative">
                 <span class="absolute left-3 top-2 text-sm text-neutral-400">USD</span>
                 <input type="number" id="price_usd" name="price_usd"
                        value="{{ old('price_usd', $v?->price_usd) }}"
                        step="0.01" min="1"
-                       class="w-full pl-12 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
+                       class="w-full pl-12 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40 @error('price_usd') border-red-400 @enderror">
             </div>
+            @error('price_usd')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
+        </div>
+
+        <div>
+            <label for="price_zwl" class="block text-sm font-medium text-neutral-700 mb-1">Price ZWL</label>
+            <div class="relative">
+                <span class="absolute left-3 top-2 text-sm text-neutral-400">ZWL</span>
+                <input type="number" id="price_zwl" name="price_zwl"
+                       value="{{ old('price_zwl', $v?->price_zwl) }}"
+                       step="0.01" min="1"
+                       class="w-full pl-12 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40 @error('price_zwl') border-red-400 @enderror">
+            </div>
+            @error('price_zwl')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
         </div>
     </div>
+
+    {{-- Dynamic features / specs (D4 — admin-managed definitions, no hardcoding) --}}
+    @isset($featureDefinitions)
+        @if ($featureDefinitions->isNotEmpty())
+            <div class="border-t border-neutral-100 pt-5">
+                <h3 class="text-sm font-semibold text-neutral-800 mb-1">Features &amp; specs</h3>
+                <p class="text-xs text-neutral-500 mb-4">Optional — set any that apply. Leave blank to skip.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    @foreach ($featureDefinitions as $def)
+                        @php $current = old("features.{$def->id}", $v?->featureValueFor($def->id)?->value); @endphp
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 mb-1">
+                                {{ $def->name }}@if($def->unit) <span class="text-neutral-400 font-normal">({{ $def->unit }})</span>@endif
+                            </label>
+                            @if ($def->type === 'boolean')
+                                <select name="features[{{ $def->id }}]" class="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
+                                    <option value="">—</option>
+                                    <option value="1" @selected($current === '1' || $current === 1)>Yes</option>
+                                    <option value="0" @selected($current === '0' || $current === 0)>No</option>
+                                </select>
+                            @elseif ($def->type === 'enum')
+                                <select name="features[{{ $def->id }}]" class="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
+                                    <option value="">—</option>
+                                    @foreach (($def->options ?? []) as $opt)
+                                        <option value="{{ $opt }}" @selected((string) $current === (string) $opt)>{{ $opt }}</option>
+                                    @endforeach
+                                </select>
+                            @elseif ($def->type === 'number')
+                                <input type="number" step="any" name="features[{{ $def->id }}]" value="{{ $current }}"
+                                       class="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
+                            @else
+                                <input type="text" name="features[{{ $def->id }}]" value="{{ $current }}" maxlength="255"
+                                       class="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+    @endisset
 
     <div>
         <label for="description" class="block text-sm font-medium text-neutral-700 mb-1">Description <span class="text-neutral-400 font-normal">(optional)</span></label>

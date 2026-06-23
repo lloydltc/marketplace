@@ -72,7 +72,7 @@
                                 <td class="px-5 py-3">
                                     <a href="{{ route('seller.vehicles.show', $vehicle) }}" class="font-medium text-neutral-900 hover:text-[#F0A820]">{{ $vehicle->displayTitle() }}</a>
                                 </td>
-                                <td class="px-5 py-3 text-right tabular-nums text-neutral-700">ZWL {{ number_format($vehicle->price_zwl, 2) }}</td>
+                                <td class="px-5 py-3 text-right tabular-nums text-neutral-700">{{ $vehicle->primaryPrice() }}</td>
                                 <td class="px-5 py-3 text-center"><x-order-status :status="$vehicle->status" /></td>
                             </tr>
                         @endforeach

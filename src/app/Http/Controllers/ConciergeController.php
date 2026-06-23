@@ -39,6 +39,13 @@ class ConciergeController extends Controller
             'status'        => 'new',
         ]);
 
+        // D6: a concierge request is a lead.
+        app(\App\Modules\Leads\Services\LeadService::class)->record('concierge', $conciergeRequest, [
+            'buyer'   => $request->user(),
+            'message' => $validated['part_description'],
+            'ip'      => $request->ip(),
+        ]);
+
         return redirect()->route('concierge.show', $conciergeRequest)
             ->with('status', 'Your concierge request is in — our team will source it and send you a quote.');
     }

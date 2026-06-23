@@ -96,6 +96,14 @@ Route::prefix('promotions')->name('promotions.')->group(function () {
 // Category management
 Route::resource('categories', CategoryController::class)->except(['show']);
 
+// Leads (D6 — site-wide funnel)
+Route::get('leads', [\App\Http\Controllers\LeadController::class, 'adminIndex'])->name('leads.index');
+Route::put('leads/{lead}', [\App\Http\Controllers\LeadController::class, 'update'])->name('leads.update');
+
+// Vehicle feature definitions (D4 — dynamic, admin-managed specs/features)
+Route::resource('vehicle-features', \App\Modules\Vehicles\Controllers\Admin\FeatureDefinitionController::class)->except(['show', 'destroy']);
+Route::post('vehicle-features/{vehicle_feature}/toggle', [\App\Modules\Vehicles\Controllers\Admin\FeatureDefinitionController::class, 'toggle'])->name('vehicle-features.toggle');
+
 // Product management
 Route::prefix('products')->name('products.')->group(function () {
     Route::get('/', [AdminProductController::class, 'index'])->name('index');

@@ -31,6 +31,7 @@ class Product extends Model
         'sku',
         'price_zwl',
         'price_usd',
+        'exchange_rate',
         'quantity',
         'status',
         'rating',
@@ -43,13 +44,36 @@ class Product extends Model
     protected function casts(): array
     {
         return [
-            'price_zwl'    => 'decimal:2',
-            'price_usd'    => 'decimal:2',
-            'rating'       => 'decimal:2',
-            'quantity'     => 'integer',
-            'review_count' => 'integer',
-            'cod_allowed'  => 'boolean',
+            'price_zwl'     => 'decimal:2',
+            'price_usd'     => 'decimal:2',
+            'exchange_rate' => 'decimal:4',
+            'rating'        => 'decimal:2',
+            'quantity'      => 'integer',
+            'review_count'  => 'integer',
+            'cod_allowed'   => 'boolean',
         ];
+    }
+
+    // ─── Pricing (USD is the entered price; ZWL is derived at the seller's rate) ──
+
+    /** Primary, seller-entered price — always USD. */
+    public function primaryPrice(): string
+    {
+        return 'USD ' . number_format((float) $this->price_usd, 2);
+    }
+
+    /** Derived ZWL price (price_usd × seller rate) — what the engine settles in. */
+    public function convertedZwl(): string
+    {
+        return 'ZWL ' . number_format((float) $this->price_zwl, 2);
+    }
+
+    /** Human-readable rate, e.g. "1 USD = 36.5000 ZWL". */
+    public function rateLabel(): ?string
+    {
+        return $this->exchange_rate !== null
+            ? '1 USD = ' . rtrim(rtrim(number_format((float) $this->exchange_rate, 4), '0'), '.') . ' ZWL'
+            : null;
     }
 
     protected static function newFactory(): Factory
@@ -83,9 +107,11 @@ class Product extends Model
         return $this->hasMany(ProductImage::class)->orderBy('display_order');
     }
 
+    /** First image by display order. Uses the loaded `images` relation when
+     *  eager-loaded (avoids N+1 on listing/landing pages). */
     public function coverImage(): ?ProductImage
     {
-        return $this->images()->first();
+        return $this->images->first();
     }
 
     // ─── Scopes ───────────────────────────────────────────────────────────────

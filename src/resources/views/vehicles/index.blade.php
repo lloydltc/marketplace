@@ -8,7 +8,14 @@
             <p class="text-sm text-neutral-500 mt-1">Browse cars, trucks, and more from dealers and private sellers.</p>
         </div>
 
-        <form method="GET" class="space-y-3 mb-3">
+        <div x-data="{ filtersOpen: false }" class="mb-3">
+            {{-- Mobile: filters live in a drawer, not a long scroll (UI_STANDARDS) --}}
+            <button type="button" @click="filtersOpen = !filtersOpen"
+                    class="sm:hidden mb-3 w-full flex items-center justify-center gap-2 border border-neutral-300 rounded-lg px-4 py-2 text-sm font-medium text-neutral-700">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4h18M6 8h12M9 12h6M11 16h2"/></svg>
+                <span x-text="filtersOpen ? 'Hide filters' : 'Filters'">Filters</span>
+            </button>
+        <form method="GET" class="sm:block space-y-3" :class="{ 'hidden': !filtersOpen }">
             <div class="flex flex-wrap gap-3">
                 <x-search-autocomplete name="search" :endpoint="route('search.vehicles')"
                                        :value="request('search')" placeholder="Search make, model or year…" />
@@ -74,16 +81,50 @@
                 <input type="number" name="max_price" value="{{ request('max_price') }}" placeholder="Max price" min="0"
                        class="w-32 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
 
+            </div>
+
+            {{-- Dynamic feature facets (D3 — driven by D4's filterable definitions) --}}
+            @if (isset($filterableFeatures) && $filterableFeatures->isNotEmpty())
+                <div class="flex flex-wrap gap-3 pt-3 border-t border-neutral-100">
+                    @foreach ($filterableFeatures as $def)
+                        @php $fv = request("features.{$def->id}"); @endphp
+                        @if ($def->type === 'boolean')
+                            <select name="features[{{ $def->id }}]"
+                                    class="border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
+                                <option value="">{{ $def->name }}: any</option>
+                                <option value="1" @selected($fv === '1')>{{ $def->name }}: Yes</option>
+                                <option value="0" @selected($fv === '0')>{{ $def->name }}: No</option>
+                            </select>
+                        @elseif ($def->type === 'enum')
+                            <select name="features[{{ $def->id }}]"
+                                    class="border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
+                                <option value="">{{ $def->name }}: any</option>
+                                @foreach (($def->options ?? []) as $opt)
+                                    <option value="{{ $opt }}" @selected((string) $fv === (string) $opt)>{{ $def->name }}: {{ $opt }}</option>
+                                @endforeach
+                            </select>
+                        @elseif ($def->type === 'number')
+                            <input type="number" name="features[{{ $def->id }}]" value="{{ $fv }}"
+                                   placeholder="{{ $def->name }}{{ $def->unit ? ' (' . $def->unit . ')' : '' }}" min="0"
+                                   class="w-40 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
+                        @endif
+                    @endforeach
+                </div>
+            @endif
+
+            {{-- Actions --}}
+            <div class="flex flex-wrap items-center gap-3 pt-1">
                 <button type="submit"
                         class="bg-[#F0A820] hover:bg-[#F0A820]/90 text-[#1A1A24] font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
                     Search
                 </button>
-                @if (request()->hasAny(['search', 'make_id', 'condition', 'fuel_type', 'sort', 'body_type', 'transmission', 'year_min', 'year_max', 'min_price', 'max_price']))
+                @if (request()->hasAny(['search', 'make_id', 'condition', 'fuel_type', 'sort', 'body_type', 'transmission', 'year_min', 'year_max', 'min_price', 'max_price', 'features']))
                     <a href="{{ route('vehicles.index') }}"
                        class="text-sm text-neutral-500 hover:text-neutral-700 px-2 py-2 self-center">Clear</a>
                 @endif
             </div>
         </form>
+        </div>
 
         {{-- Save current search (signed-in users, active filters only) --}}
         <div class="mb-8 min-h-[2rem]">
@@ -100,11 +141,8 @@
                 @foreach ($vehicles as $vehicle)
                     <a href="{{ route('vehicles.show', $vehicle) }}"
                        class="group bg-white border border-neutral-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
-                        {{-- Placeholder image area --}}
-                        <div class="aspect-video bg-neutral-100 flex items-center justify-center text-neutral-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 17H5a2 2 0 01-2-2v-4l2-5h10l2 5v4a2 2 0 01-2 2h-3m-4 0h4m-4 0v-4h4v4" />
-                            </svg>
+                        <div class="aspect-video bg-neutral-100 flex items-center justify-center overflow-hidden">
+                            <x-listing-thumbnail :cover="$vehicle->coverImage()" :alt="$vehicle->displayTitle()" type="vehicle" />
                         </div>
 
                         <div class="p-4 flex flex-col flex-1">
@@ -131,11 +169,11 @@
                             <div class="mt-auto flex items-end justify-between">
                                 <div>
                                     <div class="text-base font-bold text-neutral-900 tabular-nums">
-                                        ZWL {{ number_format($vehicle->price_zwl, 2) }}
+                                        {{ $vehicle->primaryPrice() }}
                                     </div>
-                                    @if ($vehicle->price_usd)
+                                    @if ($vehicle->secondaryPrice())
                                         <div class="text-xs text-neutral-400 tabular-nums">
-                                            USD {{ number_format($vehicle->price_usd, 2) }}
+                                            {{ $vehicle->secondaryPrice() }}
                                         </div>
                                     @endif
                                 </div>

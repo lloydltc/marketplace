@@ -1,7 +1,10 @@
 <x-layouts.app>
     <x-slot:title>Seller Dashboard</x-slot:title>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="lg:flex lg:gap-8">
+        <x-seller-sidebar />
+        <div class="flex-1 min-w-0 mt-6 lg:mt-0">
 
         {{-- Status banner --}}
         @if ($user->isPendingApproval())
@@ -13,21 +16,9 @@
             </div>
         @endif
 
-        <div class="flex items-center justify-between mb-8">
-            <div>
-                <h1 class="text-2xl font-semibold text-neutral-900">Seller Dashboard</h1>
-                <p class="text-sm text-neutral-500 mt-1">List and manage your vehicles for sale.</p>
-            </div>
-            <div class="flex items-center gap-2">
-                <a href="{{ route('seller.sales.index') }}"
-                   class="border border-neutral-300 hover:bg-neutral-50 text-neutral-700 font-medium px-4 py-2 rounded-lg text-sm transition-colors">
-                    Sales &amp; enquiries
-                </a>
-                <a href="{{ route('seller.vehicles.create') }}"
-                   class="bg-[#F0A820] hover:bg-[#F0A820]/90 text-[#1A1A24] font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
-                    + List a vehicle
-                </a>
-            </div>
+        <div class="mb-8">
+            <h1 class="text-2xl font-semibold text-neutral-900">Seller Dashboard</h1>
+            <p class="text-sm text-neutral-500 mt-1">List and manage your vehicles for sale.</p>
         </div>
 
         {{-- Real stats --}}
@@ -75,7 +66,7 @@
                                 <td class="px-5 py-3">
                                     <a href="{{ route('seller.vehicles.show', $vehicle) }}" class="font-medium text-neutral-900 hover:text-[#F0A820]">{{ $vehicle->displayTitle() }}</a>
                                 </td>
-                                <td class="px-5 py-3 text-right tabular-nums text-neutral-700">ZWL {{ number_format($vehicle->price_zwl, 2) }}</td>
+                                <td class="px-5 py-3 text-right tabular-nums text-neutral-700">{{ $vehicle->primaryPrice() }}</td>
                                 <td class="px-5 py-3 text-center"><x-order-status :status="$vehicle->status" /></td>
                             </tr>
                         @endforeach
@@ -83,5 +74,7 @@
                 </table>
             @endif
         </div>
+        </div>
+      </div>
     </div>
 </x-layouts.app>

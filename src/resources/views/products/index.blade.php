@@ -66,8 +66,8 @@
                 @foreach ($products as $product)
                     <a href="{{ route('products.show', $product) }}"
                        class="bg-white border border-neutral-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
-                        <div class="bg-neutral-100 h-40 flex items-center justify-center text-neutral-300 text-3xl">
-                            🔧
+                        <div class="bg-neutral-100 h-40 flex items-center justify-center overflow-hidden">
+                            <x-listing-thumbnail :cover="$product->coverImage()" :alt="$product->title" type="product" />
                         </div>
                         <div class="p-4">
                             <div class="text-xs text-neutral-400 mb-1">{{ $product->category?->name }}</div>
@@ -76,13 +76,11 @@
                             </h3>
                             <div class="mt-3 flex items-center justify-between">
                                 <span class="text-sm font-bold text-neutral-900 tabular-nums">
-                                    ZWL {{ number_format($product->price_zwl, 2) }}
+                                    {{ $product->primaryPrice() }}
                                 </span>
-                                @if ($product->price_usd)
-                                    <span class="text-xs text-neutral-400 tabular-nums">
-                                        USD {{ number_format($product->price_usd, 2) }}
-                                    </span>
-                                @endif
+                                <span class="text-xs text-neutral-400 tabular-nums">
+                                    {{ $product->convertedZwl() }}
+                                </span>
                             </div>
                             <div class="mt-2 text-xs text-neutral-400">
                                 {{ $product->vendor?->name }} · {{ $product->quantity }} in stock

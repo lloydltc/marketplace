@@ -72,7 +72,7 @@ class CreateWithImagesTest extends TestCase
             'category_id' => $this->category->id,
             'title' => 'Brake Pad Set',
             'description' => 'A high quality brake pad set for sedans.',
-            'price_zwl' => 1000, 'quantity' => 5,
+            'price_usd' => 1000, 'exchange_rate' => 1, 'quantity' => 5,
             'images' => [
                 UploadedFile::fake()->image('a.jpg', 800, 600),
                 UploadedFile::fake()->image('b.png', 640, 480),
@@ -118,7 +118,7 @@ class CreateWithImagesTest extends TestCase
             'category_id' => $this->category->id,
             'title' => 'No Photo Item',
             'description' => 'An item with no photos attached at all.',
-            'price_zwl' => 1000, 'quantity' => 5,
+            'price_usd' => 1000, 'exchange_rate' => 1, 'quantity' => 5,
         ])->assertRedirect();
 
         $this->assertDatabaseHas('products', ['title' => 'No Photo Item']);
@@ -133,7 +133,7 @@ class CreateWithImagesTest extends TestCase
         $product = \App\Modules\Products\Models\Product::create([
             'id' => (string) Str::uuid(), 'vendor_id' => $this->vendor->id,
             'category_id' => $this->category->id, 'title' => 'Host Product',
-            'description' => 'x', 'price_zwl' => 1000, 'quantity' => 5, 'status' => 'pending',
+            'description' => 'x', 'price_usd' => 1000, 'exchange_rate' => 1, 'price_zwl' => 1000, 'quantity' => 5, 'status' => 'pending',
         ]);
 
         $tmp = tempnam(sys_get_temp_dir(), 'evil');
@@ -156,7 +156,7 @@ class CreateWithImagesTest extends TestCase
             'category_id' => $this->category->id,
             'title' => 'Filename Test Item',
             'description' => 'Checks the stored filename is randomised, not user-supplied.',
-            'price_zwl' => 1000, 'quantity' => 5,
+            'price_usd' => 1000, 'exchange_rate' => 1, 'quantity' => 5,
             'images' => [UploadedFile::fake()->image('../../etc/passwd.jpg', 400, 300)],
         ])->assertRedirect();
 

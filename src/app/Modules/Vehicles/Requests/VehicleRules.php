@@ -22,8 +22,10 @@ trait VehicleRules
             'vin'          => ['nullable', 'string', 'size:17', 'regex:/^[A-HJ-NPR-Z0-9]{17}$/i', 'unique:vehicles,vin'],
             'color'        => ['required', 'string', 'max:50'],
             'condition'    => ['required', 'string', 'in:' . implode(',', VehicleConditionService::CONDITIONS)],
-            'price_zwl'    => ['required', 'numeric', 'min:1', 'max:999999999.99'],
-            'price_usd'    => ['nullable', 'numeric', 'min:1', 'max:9999999.99'],
+            // Either currency is acceptable — sellers aren't forced to use ZWL,
+            // but at least one price must be given.
+            'price_zwl'    => ['nullable', 'required_without:price_usd', 'numeric', 'min:1', 'max:999999999.99'],
+            'price_usd'    => ['nullable', 'required_without:price_zwl', 'numeric', 'min:1', 'max:9999999.99'],
             'description'  => ['nullable', 'string', 'max:5000'],
         ];
     }
@@ -37,6 +39,15 @@ trait VehicleRules
         return [
             'images'   => ['nullable', 'array', 'max:20'],
             'images.*' => ['file', 'image', 'mimes:jpeg,jpg,png,webp', 'max:10240'],
+        ];
+    }
+
+    /** Dynamic feature values (D4): features[<definition_id>] => value. */
+    protected function featureRules(): array
+    {
+        return [
+            'features'   => ['nullable', 'array'],
+            'features.*' => ['nullable', 'string', 'max:255'],
         ];
     }
 
