@@ -37,6 +37,17 @@ class DashboardController extends Controller
             });
         }
 
-        return view('vendor.dashboard', compact('vendor', 'stats'));
+        // H9: vendor listings needing renewal — expired + expiring soon.
+        $attentionVehicles = collect();
+        if ($vendor !== null) {
+            $soonDays = app(\App\Modules\Settings\Services\SettingsService::class)->getInt('listings.expiry_soon_days', 7);
+            $attentionVehicles = $vendor->vehicles()
+                ->where(fn ($q) => $q->where('status', 'expired')->orWhere(fn ($w) => $w->expiringWithin($soonDays)))
+                ->with(['make', 'vehicleModel'])
+                ->orderByRaw('expires_at IS NULL, expires_at')
+                ->get();
+        }
+
+        return view('vendor.dashboard', compact('vendor', 'stats', 'attentionVehicles'));
     }
 }

@@ -232,9 +232,62 @@ class Vehicle extends Model
         return $this->expires_at !== null && $this->expires_at->isPast();
     }
 
+    /**
+     * H9: whole days until this listing expires. Null when it never expires;
+     * 0 on the final day; negative once lapsed.
+     */
+    public function daysUntilExpiry(): ?int
+    {
+        if ($this->expires_at === null) {
+            return null;
+        }
+
+        return (int) ceil(now()->floatDiffInDays($this->expires_at, false));
+    }
+
+    /** H9: active listing expiring within the given window (and not yet lapsed). */
+    public function isExpiringSoon(int $withinDays): bool
+    {
+        if (! $this->isActive() || $this->expires_at === null) {
+            return false;
+        }
+
+        $days = $this->daysUntilExpiry();
+
+        return $days !== null && $days >= 0 && $days <= $withinDays;
+    }
+
+    /** H9: short human label for the expiry state, or null when not relevant. */
+    public function expiryCountdownLabel(): ?string
+    {
+        if ($this->isExpired()) {
+            return 'Expired';
+        }
+
+        if (! $this->isActive() || $this->expires_at === null) {
+            return null;
+        }
+
+        $days = $this->daysUntilExpiry();
+
+        if ($days === null || $days < 0) {
+            return 'Expired';
+        }
+
+        return $days === 0 ? 'Expires today' : "Expires in {$days} " . ($days === 1 ? 'day' : 'days');
+    }
+
     public function scopeExpiringBetween(Builder $query, \DateTimeInterface $from, \DateTimeInterface $to): Builder
     {
         return $query->where('status', 'active')->whereBetween('expires_at', [$from, $to]);
+    }
+
+    /** H9: active listings expiring within the next N days (not yet lapsed). */
+    public function scopeExpiringWithin(Builder $query, int $days): Builder
+    {
+        return $query->where('status', 'active')
+            ->whereNotNull('expires_at')
+            ->whereBetween('expires_at', [now(), now()->addDays($days)]);
     }
 
     /** The user to notify about this listing (private seller, or the vendor's admin). */

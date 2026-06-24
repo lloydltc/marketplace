@@ -56,6 +56,7 @@ class PlatformSettingsSeeder extends Seeder
             // Listing lifecycle (D5) — vehicles are lead-gen and time-bound.
             ['listings.vehicle_expiry_enabled', '1', 'boolean', 'listings', 'Expire vehicle listings after the configured period. Off = listings never expire.'],
             ['listings.vehicle_expiry_days', '60', 'integer', 'listings', 'Days a vehicle listing stays live before expiring (renewable).'],
+            ['listings.expiry_soon_days', '7', 'integer', 'listings', 'Days before expiry to start showing buyer countdowns and seller renew prompts.'],
             ['listings.vehicle_renewal_fee', '0.00', 'decimal', 'listings', 'Price (USD) to renew an expired vehicle listing. 0 = free renewal (launch default).'],
 
             // COD matrix rollout flags (§3, §10)

@@ -193,6 +193,7 @@
                                 @if ($vehicle->is_recent_import)
                                     <span class="text-xs font-semibold bg-[#3DB8E8]/15 text-[#1E7FA8] px-2 py-0.5 rounded-full">Recent import</span>
                                 @endif
+                                <x-expiry-badge :vehicle="$vehicle" />
                             </div>
                             <div class="flex items-start justify-between gap-2 mb-1">
                                 <h2 class="text-sm font-semibold text-neutral-900 group-hover:text-[#F0A820] transition-colors leading-snug">

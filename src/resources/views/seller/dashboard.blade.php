@@ -21,6 +21,9 @@
             <p class="text-sm text-neutral-500 mt-1">List and manage your vehicles for sale.</p>
         </div>
 
+        {{-- H9: renew prompts for expiring/expired listings --}}
+        <x-renew-prompt :vehicles="$attentionVehicles" renew-route="seller.vehicles.renew" />
+
         {{-- Real stats --}}
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
             <div class="bg-white border border-neutral-200 rounded-xl p-5 shadow-sm">

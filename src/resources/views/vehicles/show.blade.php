@@ -115,6 +115,9 @@
                         </a>
                     @endif
 
+                    {{-- H9: buyer-facing expiry countdown (urgency) --}}
+                    <div class="mb-3"><x-expiry-badge :vehicle="$vehicle" /></div>
+
                     {{-- H2: Zimbabwe-market badges --}}
                     @if ($vehicle->is_recent_import || $vehicle->duty_paid || $vehicle->steering)
                         <div class="flex flex-wrap gap-2 mb-3">

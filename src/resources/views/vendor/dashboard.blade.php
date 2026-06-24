@@ -58,6 +58,9 @@
             @endif
         </div>
 
+        {{-- H9: renew prompts for expiring/expired listings --}}
+        <x-renew-prompt :vehicles="$attentionVehicles" renew-route="vendor.vehicles.renew" />
+
         {{-- KPI cards --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div class="bg-white border border-neutral-200 rounded-xl p-5 shadow-sm">
