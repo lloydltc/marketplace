@@ -115,6 +115,11 @@
                     {!! nl2br(e($product->description)) !!}
                 </div>
 
+                {{-- H11: report this listing --}}
+                <div class="mt-4">
+                    <x-report-listing :action="route('products.report', $product)" />
+                </div>
+
                 {{-- H10: which vehicles this part fits --}}
                 @if ($product->fitments->isNotEmpty())
                     <div class="mt-6 bg-neutral-50 border border-neutral-200 rounded-xl p-4">

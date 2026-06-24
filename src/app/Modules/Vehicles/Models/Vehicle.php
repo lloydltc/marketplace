@@ -145,6 +145,12 @@ class Vehicle extends Model
         return $this->hasMany(VehicleFeatureValue::class);
     }
 
+    /** H11: moderation reports filed against this listing. */
+    public function reports(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(\App\Models\ListingReport::class, 'reportable');
+    }
+
     /** The stored value for a feature definition id, or null (uses loaded relation). */
     public function featureValueFor(string $definitionId): ?VehicleFeatureValue
     {

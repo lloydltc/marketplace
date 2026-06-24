@@ -67,6 +67,12 @@ Route::get('search/vehicles', [SearchController::class, 'vehicles'])->name('sear
 // H6: live inventory count for the vehicle filter form (JSON)
 Route::get('search/vehicles/count', [SearchController::class, 'vehicleCount'])->name('search.vehicles.count');
 
+// H11: report a listing for moderation (public, rate-limited)
+Route::post('vehicles/{vehicle}/report', [\App\Http\Controllers\ReportController::class, 'vehicle'])
+    ->middleware('throttle:10,1')->name('vehicles.report');
+Route::post('products/{product}/report', [\App\Http\Controllers\ReportController::class, 'product'])
+    ->middleware('throttle:10,1')->name('products.report');
+
 // H8: public dealer directory + storefronts (approved vendors only)
 Route::get('dealers', [\App\Http\Controllers\DealerController::class, 'index'])->name('dealers.index');
 Route::get('dealers/{vendor:slug}', [\App\Http\Controllers\DealerController::class, 'show'])->name('dealers.show');

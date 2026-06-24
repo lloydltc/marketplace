@@ -320,6 +320,11 @@
                             By contacting, you agree your details may be shared with the seller.
                         </p>
                     </div>
+
+                    {{-- H11: report this listing --}}
+                    <div class="mt-3 text-center">
+                        <x-report-listing :action="route('vehicles.report', $vehicle)" />
+                    </div>
                 </div>
             </div>
 

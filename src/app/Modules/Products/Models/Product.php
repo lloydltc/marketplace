@@ -113,6 +113,12 @@ class Product extends Model
         return $this->hasMany(ProductFitment::class);
     }
 
+    /** H11: moderation reports filed against this listing. */
+    public function reports(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(\App\Models\ListingReport::class, 'reportable');
+    }
+
     /** First image by display order. Uses the loaded `images` relation when
      *  eager-loaded (avoids N+1 on listing/landing pages). */
     public function coverImage(): ?ProductImage

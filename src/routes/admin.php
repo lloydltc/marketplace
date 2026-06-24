@@ -120,6 +120,10 @@ Route::prefix('vehicles')->name('vehicles.')->group(function () {
     Route::post('{vehicle}/reject', [VehicleApprovalController::class, 'reject'])->name('reject');
 });
 
+// H11: listing moderation queue
+Route::get('moderation', [\App\Http\Controllers\Admin\ModerationController::class, 'index'])->name('moderation.index');
+Route::post('moderation/{report}/resolve', [\App\Http\Controllers\Admin\ModerationController::class, 'resolve'])->name('moderation.resolve');
+
 // Vendor management
 Route::prefix('vendors')->name('vendors.')->group(function () {
     Route::get('/', [VendorController::class, 'index'])->name('index');

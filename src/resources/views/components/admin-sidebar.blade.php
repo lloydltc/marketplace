@@ -10,6 +10,7 @@
             ['Vendors', 'admin.vendors.index', 'admin.vendors.*'],
             ['Products', 'admin.products.index', 'admin.products.*'],
             ['Vehicles', 'admin.vehicles.index', 'admin.vehicles.*'],
+            ['Moderation', 'admin.moderation.index', 'admin.moderation.*'],
         ],
         'Catalogue' => [
             ['Categories', 'admin.categories.index', 'admin.categories.*'],

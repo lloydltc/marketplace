@@ -32,3 +32,6 @@ Schedule::command('analytics:aggregate')->hourly();
 
 // H7: email buyers about new listings matching their saved-search alerts.
 Schedule::command('alerts:saved-searches')->dailyAt('07:30');
+
+// H11: rule-based auto-flag scan for the moderation queue.
+Schedule::command('moderation:scan')->dailyAt('05:30');
