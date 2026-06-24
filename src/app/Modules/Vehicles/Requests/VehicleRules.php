@@ -15,14 +15,20 @@ trait VehicleRules
         $currentYear = (int) date('Y');
         $req = $draft ? 'nullable' : 'required';
 
+        // H12: body type is validated against the *selected* listing type's set, so a
+        // motorbike body can't be saved on a boat, etc. Falls back to the default
+        // type when none is supplied (existing rows / cars).
+        $type = $this->input('vehicle_type') ?: config('vehicle_types.default', 'vehicle');
+        $bodyTypes = \App\Modules\Vehicles\Models\Vehicle::bodyTypesFor($type);
+
         return [
             // H0: listing type (cars/bikes/boats/trailers). Absent → DB default 'vehicle'.
             'vehicle_type' => ['nullable', 'string', 'in:' . implode(',', \App\Modules\Vehicles\Models\Vehicle::types())],
             'make_id'      => [$req, 'uuid', 'exists:vehicle_makes,id'],
             'model_id'     => [$req, 'uuid', 'exists:vehicle_models,id'],
             'year'         => [$req, 'integer', 'min:1900', 'max:' . ($currentYear + 1)],
-            // Body type validated against the union of all types' sets (form shows only the relevant ones).
-            'body_type'    => [$req, 'string', 'in:' . implode(',', \App\Modules\Vehicles\Models\Vehicle::allBodyTypes())],
+            // H12: type-scoped body type (the form already shows only the relevant set).
+            'body_type'    => [$req, 'string', 'in:' . implode(',', $bodyTypes)],
             'transmission' => [$req, 'string', 'in:' . implode(',', VehicleConditionService::TRANSMISSIONS)],
             'fuel_type'    => [$req, 'string', 'in:' . implode(',', VehicleConditionService::FUEL_TYPES)],
             'engine_cc'    => ['nullable', 'integer', 'min:50', 'max:20000'],

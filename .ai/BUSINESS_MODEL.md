@@ -148,8 +148,17 @@ No online checkout for vehicles. Monetize visibility:
 | **Listing bump** | Re-sorts listing to top of recency feed |
 | **Dealer packages** | Monthly bundle for vendors: X active listings + Y features/bumps |
 | **Verified seller badge** | Paid verification (leverages Phase 3 document verification) |
+| **Featured dealer placement** (H8) | Paid carousel placement for a dealer (not a single listing) on the home page + Find-a-Dealer directory, for N days |
 
-All purchasable via the gateway; promotion state (featured_until, bumped_at, package) lives on the listing.
+All purchasable via the gateway; promotion state (featured_until, bumped_at, package) lives on the listing. **Featured-dealer** state lives on the vendor (`vendors.featured_until`), is admin-set (audited via `audit_logs`), and surfaces only approved dealers. Carousel size is config-driven (`config/dealers.php`).
+
+### H-series additions (High-Impact Features cycle — no online checkout impact)
+
+- **Saved-search alerts (H7)**: buyers opt a saved vehicle search into email alerts; a daily job emails only listings published since the previous digest (deduped via `last_notified_at`). Free; drives return visits.
+- **Listing lifecycle surfacing (H9)**: buyer-facing expiry countdowns + seller/vendor renew prompts within a settings window (`listings.expiry_soon_days`). Renewal remains free at launch (`listings.vehicle_renewal_fee` = 0).
+- **Parts ⇄ vehicle cross-sell (H10)**: parts declare vehicle fitments; matching parts surface on vehicle pages and vice-versa. Cross-sell slots are sponsorable later.
+- **Trust & safety (H11)**: buyer report-listing + deterministic (no-AI) rule-based auto-flags feed an audited admin moderation queue; takedown hides the listing platform-wide.
+- **Type-scoped validation (H12)**: a listing's `body_type` must belong to its `vehicle_type` (Car/Motorbike/Boat/Trailer) — enforced server-side; the four types are a first-class catalogue/search/editor dimension.
 
 ---
 
@@ -168,6 +177,8 @@ All purchasable via the gateway; promotion state (featured_until, bumped_at, pac
 | Payout cycle | Weekly | Minimum payout US$10, roll-over below |
 | Featured vehicle listing | US$10 / 7 days | Placeholder — market-test |
 | Listing bump | US$2 | Placeholder — market-test |
+| Featured dealer placement (H8) | TBD / N days | Admin-set duration; carousel count via `dealers.featured_count` |
+| Expiry "soon" window (H9) | 7 days | `listings.expiry_soon_days` — drives countdowns + renew prompts |
 
 These numbers are **starting hypotheses**, not commitments. Expect monthly tuning post-launch — hence config-driven everything.
 

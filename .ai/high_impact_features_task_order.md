@@ -246,4 +246,28 @@ Sequence: **H0 → H1 → H2 → H3 → H4 → H5 → H6 → H7 → H8 → H9 �
 *Document Version: 1.0*
 *Scope: highest-impact features minus #11 & #19, Phase-4 AI paused, vehicle-type chooser added.*
 *Companion: competitive_review_gap_analysis.md, UI_STANDARDS.md, BUSINESS_MODEL.md, task_execution_order.md v2.0, listings_discovery_increment.md, production_readiness_task_order.md*
+*Status: **COMPLETE** — H0–H12 all delivered, checkpointed, and committed.*
+
+---
+
+## Completion log (H0–H12)
+
+All twelve tasks implemented, tested by execution as the real role, and committed. Full suite: **541 passing**.
+
+| Task | Delivered | New rules / settings |
+|------|-----------|----------------------|
+| H0 | Vehicle-type foundation (`config/vehicle_types.php`, `vehicle_type` column, type-aware partials, `applies_to_types` on features) | — |
+| H1 | Listing editor: Draft/Publish/Delete, sectioned layout, nullable draft fields | — |
+| H2 | Type-aware dynamic features + Zimbabwe fields (show_price/POA, duty_paid, recent import, ref_code, steering) | — |
+| H3 | Gallery UX (lightbox/share/download) + watermarked medium derivatives (originals stay private) | — |
+| H4 | WhatsApp-primary contact + masked reveal, lead events | — |
+| H5 | Per-listing analytics: raw `listing_events` (dedupe index + bot filter + hmac visitor hash) → `listing_daily_stats`; hourly `analytics:aggregate` | — |
+| H6 | Discovery: live count endpoint, count-driven type tabs, browse by body/make | — |
+| H7 | Compare (session), saved-search alerts (`alerts:saved-searches`), recently-viewed (plain cookie), sponsored rows | `engagement.*`; `recently_viewed_vehicles` excluded from cookie encryption (public UUIDs only) |
+| H8 | Dealer storefronts + Find-a-Dealer + featured-dealer carousel | `dealers.*`; `vendors.featured_until` (paid placement, admin-set, audited) |
+| H9 | Buyer expiry countdown + seller/vendor renew prompts | `listings.expiry_soon_days` (seeded, default 7) |
+| H10 | Parts ⇄ vehicle cross-sell (`product_fitments`, both-direction matching, vendor fitment editor) | `compatibility.*` |
+| H11 | Report-listing + rule-based auto-flags (`moderation:scan`, no AI) + admin moderation queue (audited) | `moderation.*` (reasons, banned keywords, price floor) |
+| H12 | QA gate across all four types; **type-scoped `body_type` validation** (a body type must belong to the selected listing type) | — |
+
 *Status: Ready for execution*
