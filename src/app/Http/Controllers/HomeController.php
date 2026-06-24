@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Vendor;
 use App\Modules\Products\Repositories\ProductRepositoryInterface;
 use App\Modules\Vehicles\Models\Vehicle;
 use App\Modules\Vehicles\Repositories\VehicleRepositoryInterface;
@@ -30,8 +31,20 @@ class HomeController extends Controller
         $sponsored = $this->vehicles->sponsored((int) config('engagement.sponsored.count', 4));
         $recentlyViewed = $this->hydrateRecentlyViewed($recentlyViewedTracker->ids());
 
+        // H8: featured-dealer carousel (paid placement, config-driven count).
+        $featuredDealers = Vendor::query()
+            ->approved()->featured()
+            ->withCount([
+                'vehicles as live_vehicles_count' => fn ($q) => $q->where('status', 'active')
+                    ->where(fn ($w) => $w->whereNull('expires_at')->orWhere('expires_at', '>', now())),
+                'products as live_products_count' => fn ($q) => $q->where('status', 'active'),
+            ])
+            ->orderByDesc('featured_until')
+            ->limit((int) config('dealers.featured_count', 8))
+            ->get();
+
         return view('customer.dashboard', compact(
-            'products', 'vehicles', 'typeCounts', 'popularMakes', 'sponsored', 'recentlyViewed'
+            'products', 'vehicles', 'typeCounts', 'popularMakes', 'sponsored', 'recentlyViewed', 'featuredDealers'
         ));
     }
 

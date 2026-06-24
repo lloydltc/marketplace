@@ -119,6 +119,44 @@
             </div>
         </div>
 
+        {{-- H8: featured-dealer placement (paid) --}}
+        <div class="bg-white border border-neutral-200 rounded-xl shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                    <h2 class="text-base font-semibold text-neutral-900">Featured placement</h2>
+                    <p class="text-sm text-neutral-500 mt-0.5">
+                        @if ($vendor->isFeaturedDealer())
+                            Featured until <strong>{{ $vendor->featured_until->toFormattedDateString() }}</strong> — shown in the dealer carousel.
+                        @else
+                            Not currently featured.
+                        @endif
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    @if ($vendor->isApproved())
+                        <form method="POST" action="{{ route('admin.vendors.feature', $vendor) }}" class="flex items-center gap-2">
+                            @csrf
+                            <input type="number" name="days" min="1" max="365" value="30"
+                                   class="w-20 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
+                            <span class="text-sm text-neutral-500">days</span>
+                            <button type="submit"
+                                    class="bg-[#F0A820] hover:bg-[#F0A820]/90 text-[#1A1A24] font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
+                                Feature
+                            </button>
+                        </form>
+                        @if ($vendor->isFeaturedDealer())
+                            <form method="POST" action="{{ route('admin.vendors.unfeature', $vendor) }}">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="border border-neutral-300 text-neutral-600 hover:bg-neutral-50 font-medium px-4 py-2 rounded-lg text-sm transition-colors">Remove</button>
+                            </form>
+                        @endif
+                    @else
+                        <span class="text-sm text-neutral-400">Approve the dealer to enable featuring.</span>
+                    @endif
+                </div>
+            </div>
+        </div>
+
         {{-- Details grid --}}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 

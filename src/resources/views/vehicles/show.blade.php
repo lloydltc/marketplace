@@ -107,6 +107,14 @@
                         <x-compare-toggle :vehicle="$vehicle" class="shrink-0" />
                     </div>
 
+                    {{-- H8: link to the dealer's storefront (vendor listings only) --}}
+                    @if ($vehicle->isListedByVendor() && $vehicle->vendor?->isApproved())
+                        <a href="{{ $vehicle->vendor->storefrontUrl() }}"
+                           class="inline-flex items-center gap-1 text-sm text-[#3DB8E8] hover:underline mb-1">
+                            Sold by {{ $vehicle->vendor->name }} →
+                        </a>
+                    @endif
+
                     {{-- H2: Zimbabwe-market badges --}}
                     @if ($vehicle->is_recent_import || $vehicle->duty_paid || $vehicle->steering)
                         <div class="flex flex-wrap gap-2 mb-3">

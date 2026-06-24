@@ -55,6 +55,26 @@
         </div>
     @endif
 
+    {{-- H8: featured-dealer carousel (paid placement) --}}
+    @if ($featuredDealers->isNotEmpty())
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold text-neutral-900 flex items-center gap-2">
+                    Featured dealers
+                    <span class="text-[10px] font-semibold uppercase tracking-wide bg-[#F0A820]/15 text-[#B5790F] px-2 py-0.5 rounded-full">Sponsored</span>
+                </h2>
+                <a href="{{ route('dealers.index') }}" class="text-sm text-[#3DB8E8] hover:underline">Find a dealer →</a>
+            </div>
+            <div class="flex gap-4 overflow-x-auto pb-2 snap-x">
+                @foreach ($featuredDealers as $dealer)
+                    <div class="snap-start shrink-0 w-72">
+                        <x-dealer-card :dealer="$dealer" :featured="true" />
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     {{-- H7: sponsored (paid placement) row --}}
     <x-vehicle-row title="Sponsored listings" :vehicles="$sponsored" :sponsored="true"
                    :view-all="route('vehicles.index')" />

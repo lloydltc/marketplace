@@ -140,6 +140,10 @@ Route::prefix('vendors')->name('vendors.')->group(function () {
 
     // Tier management
     Route::post('{vendor}/tier', [VendorTierController::class, 'update'])->name('tier.update');
+
+    // H8: featured-dealer placement (paid)
+    Route::post('{vendor}/feature', [\App\Http\Controllers\Admin\DealerFeatureController::class, 'store'])->name('feature');
+    Route::delete('{vendor}/feature', [\App\Http\Controllers\Admin\DealerFeatureController::class, 'destroy'])->name('unfeature');
 });
 
 // User management (private sellers + all roles)

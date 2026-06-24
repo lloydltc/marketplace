@@ -33,6 +33,7 @@ class Vendor extends Model
         // Phase 3 additions
         'status',
         'tier',
+        'featured_until',
         'commission_rate',
         'business_registration',
         'tax_id',
@@ -46,6 +47,7 @@ class Vendor extends Model
         return [
             'verified_at'     => 'datetime',
             'suspended_at'    => 'datetime',
+            'featured_until'  => 'datetime',
             'commission_rate' => 'float',
             'cod_eligible'    => 'boolean',
         ];
@@ -120,6 +122,12 @@ class Vendor extends Model
         return $query->where('status', 'approved');
     }
 
+    /** H8: dealers with live paid placement. */
+    public function scopeFeatured(Builder $query): Builder
+    {
+        return $query->where('featured_until', '>', now());
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
     public function isApproved(): bool
@@ -160,6 +168,31 @@ class Vendor extends Model
     public function isPremium(): bool
     {
         return $this->tier === 'premium';
+    }
+
+    /** H8: paid featured-dealer placement currently active. */
+    public function isFeaturedDealer(): bool
+    {
+        return $this->featured_until !== null && $this->featured_until->isFuture();
+    }
+
+    /** Public storefront URL for this dealer. */
+    public function storefrontUrl(): string
+    {
+        return route('dealers.show', $this->slug);
+    }
+
+    /** Resolved logo URL, or null when none uploaded. */
+    public function logoUrl(): ?string
+    {
+        if (empty($this->logo)) {
+            return null;
+        }
+
+        // Absolute URLs pass through; stored paths resolve against the public disk.
+        return Str::startsWith($this->logo, ['http://', 'https://'])
+            ? $this->logo
+            : \Illuminate\Support\Facades\Storage::disk('public')->url($this->logo);
     }
 
     public function isUnverified(): bool

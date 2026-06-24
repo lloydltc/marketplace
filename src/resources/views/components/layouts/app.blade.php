@@ -46,6 +46,7 @@
                 @if ($canShop)
                     <a href="{{ route('products.index') }}" class="text-neutral-300 hover:text-white text-sm font-medium transition-colors">Shop</a>
                     <a href="{{ route('vehicles.index') }}" class="text-neutral-300 hover:text-white text-sm font-medium transition-colors">Vehicles</a>
+                    <a href="{{ route('dealers.index') }}" class="text-neutral-300 hover:text-white text-sm font-medium transition-colors">Dealers</a>
                 @endif
                 @foreach ($roleLinks as $item)
                     <a href="{{ $item['url'] }}" class="text-neutral-300 hover:text-white text-sm font-medium transition-colors">{{ $item['label'] }}</a>
@@ -101,6 +102,7 @@
         @if ($canShop)
             <a href="{{ route('products.index') }}" class="block text-neutral-300 hover:text-white text-sm font-medium py-2">Shop</a>
             <a href="{{ route('vehicles.index') }}" class="block text-neutral-300 hover:text-white text-sm font-medium py-2">Vehicles</a>
+            <a href="{{ route('dealers.index') }}" class="block text-neutral-300 hover:text-white text-sm font-medium py-2">Dealers</a>
         @endif
         @foreach ($roleLinks as $item)
             <a href="{{ $item['url'] }}" class="block text-neutral-300 hover:text-white text-sm font-medium py-2">{{ $item['label'] }}</a>
@@ -146,6 +148,9 @@
 <main>
     {{ $slot }}
 </main>
+
+{{-- H7: floating compare bar (shows when the buyer has vehicles queued to compare) --}}
+@include('partials.compare-bar')
 
 {{-- Footer (P9) --}}
 <footer class="bg-[#1A1A24] text-neutral-400 mt-16">

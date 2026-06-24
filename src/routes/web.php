@@ -67,6 +67,10 @@ Route::get('search/vehicles', [SearchController::class, 'vehicles'])->name('sear
 // H6: live inventory count for the vehicle filter form (JSON)
 Route::get('search/vehicles/count', [SearchController::class, 'vehicleCount'])->name('search.vehicles.count');
 
+// H8: public dealer directory + storefronts (approved vendors only)
+Route::get('dealers', [\App\Http\Controllers\DealerController::class, 'index'])->name('dealers.index');
+Route::get('dealers/{vendor:slug}', [\App\Http\Controllers\DealerController::class, 'show'])->name('dealers.show');
+
 // H7: side-by-side vehicle comparison (session-backed, public)
 Route::get('compare', [\App\Http\Controllers\CompareController::class, 'show'])->name('compare.show');
 Route::post('compare/{vehicle}', [\App\Http\Controllers\CompareController::class, 'add'])->name('compare.add');
