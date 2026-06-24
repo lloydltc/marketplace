@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Modules\Products\Repositories\ProductRepositoryInterface;
+use App\Modules\Vehicles\Models\Vehicle;
 use App\Modules\Vehicles\Repositories\VehicleRepositoryInterface;
+use App\Support\RecentlyViewed;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -13,7 +15,7 @@ class HomeController extends Controller
         private readonly VehicleRepositoryInterface $vehicles
     ) {}
 
-    public function index(): View
+    public function index(RecentlyViewed $recentlyViewedTracker): View
     {
         // Public marketplace landing — visible to guests before they authenticate.
         // Ranking (FBS boost / featured priority) is applied inside the repositories.
@@ -24,6 +26,31 @@ class HomeController extends Controller
         $typeCounts   = $this->vehicles->countByType();
         $popularMakes = $this->vehicles->popularMakes(10);
 
-        return view('customer.dashboard', compact('products', 'vehicles', 'typeCounts', 'popularMakes'));
+        // H7: engagement rails — sponsored (paid placement) + recently viewed.
+        $sponsored = $this->vehicles->sponsored((int) config('engagement.sponsored.count', 4));
+        $recentlyViewed = $this->hydrateRecentlyViewed($recentlyViewedTracker->ids());
+
+        return view('customer.dashboard', compact(
+            'products', 'vehicles', 'typeCounts', 'popularMakes', 'sponsored', 'recentlyViewed'
+        ));
+    }
+
+    /**
+     * @param  array<int, string>  $ids
+     * @return \Illuminate\Support\Collection<int, Vehicle>
+     */
+    private function hydrateRecentlyViewed(array $ids): \Illuminate\Support\Collection
+    {
+        if ($ids === []) {
+            return collect();
+        }
+
+        return Vehicle::query()
+            ->active()
+            ->whereIn('id', $ids)
+            ->with(['make', 'vehicleModel', 'images'])
+            ->get()
+            ->sortBy(fn ($v) => array_search($v->id, $ids, true))
+            ->values();
     }
 }

@@ -150,6 +150,16 @@ class VehicleRepository implements VehicleRepositoryInterface
             ->map(fn ($row) => (object) ['id' => $row->id, 'name' => $row->name, 'total' => (int) $row->total]);
     }
 
+    public function sponsored(int $limit = 4): \Illuminate\Support\Collection
+    {
+        return $this->publicBaseQuery()
+            ->where('featured_until', '>', now())
+            ->with(['make', 'vehicleModel', 'vendor', 'seller', 'images'])
+            ->orderByDesc('featured_until')
+            ->limit($limit)
+            ->get();
+    }
+
     /**
      * Make/model suggestions for the vehicle search autocomplete.
      *
@@ -261,6 +271,13 @@ class VehicleRepository implements VehicleRepositoryInterface
 
         if (! empty($filters['condition'])) {
             $query->where('condition', $filters['condition']);
+        }
+
+        // H7: only listings that went live after a cut-off (saved-search alerts —
+        // "new since I was last notified"). Uses publish time, falling back to
+        // creation time for legacy rows.
+        if (! empty($filters['created_after'])) {
+            $query->whereRaw('COALESCE(published_at, created_at) > ?', [$filters['created_after']]);
         }
 
         // Dynamic feature facets (D3 + D4). features = [definition_id => value].

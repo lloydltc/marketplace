@@ -53,6 +53,9 @@
     {{ $slot }}
 </main>
 
+{{-- H7: floating compare bar (shows when the buyer has vehicles queued to compare) --}}
+@include('partials.compare-bar')
+
 @livewireScripts
 </body>
 </html>

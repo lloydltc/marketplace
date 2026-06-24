@@ -47,6 +47,14 @@ interface VehicleRepositoryInterface
     public function popularMakes(int $limit = 12): \Illuminate\Support\Collection;
 
     /**
+     * H7: currently-sponsored (featured & unexpired) active listings, newest
+     * promotion first — for "Sponsored" promo rows.
+     *
+     * @return \Illuminate\Support\Collection<int, Vehicle>
+     */
+    public function sponsored(int $limit = 4): \Illuminate\Support\Collection;
+
+    /**
      * @return array<int, string>
      */
     public function suggest(string $term, int $limit = 8): array;

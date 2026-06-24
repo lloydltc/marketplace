@@ -29,3 +29,6 @@ Schedule::command('vehicles:expire')->dailyAt('04:00');
 
 // H5: pre-aggregate listing analytics hourly (keeps dashboards fresh + bounds raw table).
 Schedule::command('analytics:aggregate')->hourly();
+
+// H7: email buyers about new listings matching their saved-search alerts.
+Schedule::command('alerts:saved-searches')->dailyAt('07:30');

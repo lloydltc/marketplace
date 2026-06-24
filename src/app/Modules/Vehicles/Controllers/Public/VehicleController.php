@@ -62,7 +62,37 @@ class VehicleController extends Controller
         // H5: record a (deduped, bot-filtered) detail view for seller analytics.
         app(\App\Modules\Analytics\Services\AnalyticsService::class)->record('detail_view', $vehicle, request());
 
-        return view('vehicles.show', compact('vehicle'));
+        // H7: remember this listing for the buyer's "recently viewed" row, then
+        // surface the others they've looked at (excluding this one).
+        $recent = app(\App\Support\RecentlyViewed::class);
+        $recentlyViewed = $this->recentlyViewed($recent->ids(), $vehicle->id);
+        $recent->record($vehicle->id);
+
+        return view('vehicles.show', compact('vehicle', 'recentlyViewed'));
+    }
+
+    /**
+     * H7: hydrate the buyer's recently-viewed ids into active listings, preserving
+     * recency order and dropping the listing currently on screen.
+     *
+     * @param  array<int, string>  $ids
+     * @return \Illuminate\Support\Collection<int, Vehicle>
+     */
+    private function recentlyViewed(array $ids, string $excludeId): \Illuminate\Support\Collection
+    {
+        $ids = array_values(array_diff($ids, [$excludeId]));
+
+        if ($ids === []) {
+            return collect();
+        }
+
+        return Vehicle::query()
+            ->active()
+            ->whereIn('id', $ids)
+            ->with(['make', 'vehicleModel', 'images'])
+            ->get()
+            ->sortBy(fn ($v) => array_search($v->id, $ids, true))
+            ->values();
     }
 
     /** H3: download all of a listing's (watermarked) images as a zip. */

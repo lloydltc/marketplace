@@ -55,6 +55,13 @@
         </div>
     @endif
 
+    {{-- H7: sponsored (paid placement) row --}}
+    <x-vehicle-row title="Sponsored listings" :vehicles="$sponsored" :sponsored="true"
+                   :view-all="route('vehicles.index')" />
+
+    {{-- H7: recently viewed (cookie-backed, per browser) --}}
+    <x-vehicle-row title="Recently viewed" :vehicles="$recentlyViewed" />
+
     {{-- Vehicles for sale --}}
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14">
         <div class="flex items-center justify-between mb-6">

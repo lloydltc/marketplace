@@ -36,6 +36,17 @@
                             <div class="text-xs text-neutral-400 mt-0.5">Saved {{ $search->created_at->diffForHumans() }}</div>
                         </div>
                         <div class="flex items-center gap-3">
+                            @if ($search->type === 'vehicles')
+                                {{-- H7: toggle email alerts for this search --}}
+                                <form method="POST" action="{{ route('saved-searches.update', $search) }}">
+                                    @csrf @method('PATCH')
+                                    <input type="hidden" name="notify" value="{{ $search->notify ? '0' : '1' }}">
+                                    <button type="submit"
+                                            class="text-xs font-medium px-2.5 py-1 rounded-full transition-colors {{ $search->notify ? 'bg-[#2EBD7A]/15 text-[#1B8F5A]' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200' }}">
+                                        {{ $search->notify ? '🔔 Alerts on' : 'Alerts off' }}
+                                    </button>
+                                </form>
+                            @endif
                             <a href="{{ $search->url() }}"
                                class="text-sm font-medium text-[#F0A820] hover:underline">Run search</a>
                             <form method="POST" action="{{ route('saved-searches.destroy', $search) }}"

@@ -21,13 +21,23 @@ class SavedSearch extends Model
         'name',
         'type',
         'query_params',
+        'notify',
+        'last_notified_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'query_params' => 'array',
+            'query_params'     => 'array',
+            'notify'           => 'boolean',
+            'last_notified_at' => 'datetime',
         ];
+    }
+
+    /** H7: searches opted into email alerts. */
+    public function scopeAlerting($query)
+    {
+        return $query->where('notify', true);
     }
 
     protected static function booted(): void

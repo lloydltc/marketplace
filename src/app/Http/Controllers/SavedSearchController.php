@@ -25,11 +25,12 @@ class SavedSearchController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:100'],
-            'type' => ['required', 'in:products,vehicles'],
+            'name'   => ['required', 'string', 'max:100'],
+            'type'   => ['required', 'in:products,vehicles'],
+            'notify' => ['sometimes', 'boolean'],
         ]);
 
-        $params = collect($request->except(self::IGNORED_KEYS))
+        $params = collect($request->except([...self::IGNORED_KEYS, 'notify']))
             ->filter(fn ($value) => $value !== null && $value !== '')
             ->all();
 
@@ -38,9 +39,20 @@ class SavedSearchController extends Controller
             'name'         => $validated['name'],
             'type'         => $validated['type'],
             'query_params' => $params,
+            'notify'       => $request->boolean('notify'),
         ]);
 
         return back()->with('status', 'Search saved. View it under “Saved searches”.');
+    }
+
+    /** H7: toggle email alerts on/off for a saved search. */
+    public function update(Request $request, SavedSearch $savedSearch): RedirectResponse
+    {
+        abort_unless($savedSearch->user_id === $request->user()->id, 403);
+
+        $savedSearch->update(['notify' => $request->boolean('notify')]);
+
+        return back()->with('status', $savedSearch->notify ? 'Alerts on for this search.' : 'Alerts off for this search.');
     }
 
     public function destroy(Request $request, SavedSearch $savedSearch): RedirectResponse

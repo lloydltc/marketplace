@@ -35,6 +35,12 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SecurityHeaders::class,
         ]);
 
+        // H7: recently-viewed holds only public vehicle UUIDs — no PII or session
+        // value — so it's read as a plain cookie (no per-request encrypt/decrypt).
+        $middleware->encryptCookies(except: [
+            'recently_viewed_vehicles',
+        ]);
+
         // Pesepay posts the webhook server-to-server — exclude it from CSRF.
         $middleware->validateCsrfTokens(except: [
             'payments/webhook',

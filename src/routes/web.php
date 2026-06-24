@@ -67,6 +67,12 @@ Route::get('search/vehicles', [SearchController::class, 'vehicles'])->name('sear
 // H6: live inventory count for the vehicle filter form (JSON)
 Route::get('search/vehicles/count', [SearchController::class, 'vehicleCount'])->name('search.vehicles.count');
 
+// H7: side-by-side vehicle comparison (session-backed, public)
+Route::get('compare', [\App\Http\Controllers\CompareController::class, 'show'])->name('compare.show');
+Route::post('compare/{vehicle}', [\App\Http\Controllers\CompareController::class, 'add'])->name('compare.add');
+Route::delete('compare/{vehicle}', [\App\Http\Controllers\CompareController::class, 'remove'])->name('compare.remove');
+Route::delete('compare', [\App\Http\Controllers\CompareController::class, 'clear'])->name('compare.clear');
+
 // "Can't find it? Request it" — RFQ entry point (full lifecycle in Phase 15)
 Route::get('requests/new', [RfqController::class, 'create'])->name('rfq.create');
 
@@ -124,6 +130,7 @@ Route::middleware(['auth', 'verified', 'check.status', 'force.password.change'])
         // Saved searches
         Route::get('saved-searches', [SavedSearchController::class, 'index'])->name('saved-searches.index');
         Route::post('saved-searches', [SavedSearchController::class, 'store'])->name('saved-searches.store');
+        Route::patch('saved-searches/{savedSearch}', [SavedSearchController::class, 'update'])->name('saved-searches.update');
         Route::delete('saved-searches/{savedSearch}', [SavedSearchController::class, 'destroy'])->name('saved-searches.destroy');
 
         // Concierge — buyer (the public form lives at /concierge/new above)

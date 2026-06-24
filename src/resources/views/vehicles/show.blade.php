@@ -101,7 +101,11 @@
                 @endif
 
                 <div class="bg-white border border-neutral-200 rounded-xl shadow-sm p-6">
-                    <h1 class="text-2xl font-bold text-neutral-900 mb-1">{{ $vehicle->displayTitle() }}</h1>
+                    <div class="flex items-start justify-between gap-3 mb-1">
+                        <h1 class="text-2xl font-bold text-neutral-900">{{ $vehicle->displayTitle() }}</h1>
+                        {{-- H7: add this listing to the compare set --}}
+                        <x-compare-toggle :vehicle="$vehicle" class="shrink-0" />
+                    </div>
 
                     {{-- H2: Zimbabwe-market badges --}}
                     @if ($vehicle->is_recent_import || $vehicle->duty_paid || $vehicle->steering)
@@ -310,4 +314,7 @@
 
         </div>
     </div>
+
+    {{-- H7: other listings this buyer has recently viewed --}}
+    <x-vehicle-row title="Recently viewed" :vehicles="$recentlyViewed" />
 </x-layouts.app>
