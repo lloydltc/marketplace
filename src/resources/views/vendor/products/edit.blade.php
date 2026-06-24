@@ -139,5 +139,61 @@
             'imageLimit'   => $imageLimit,
             'hasViewType'  => false,
         ])
+
+        {{-- H10: vehicle compatibility (fitments) --}}
+        <div class="bg-white border border-neutral-200 rounded-xl shadow-sm p-6 mt-6"
+             x-data="{
+                 makes: {{ Illuminate\Support\Js::from($makes->map(fn ($m) => ['id' => $m->id, 'name' => $m->name, 'models' => $m->models->map(fn ($mo) => ['id' => $mo->id, 'name' => $mo->name])->values()])) }},
+                 makeId: '',
+                 get models() { return (this.makes.find(m => m.id === this.makeId)?.models) ?? []; }
+             }">
+            <h2 class="text-base font-semibold text-neutral-900">Vehicle compatibility</h2>
+            <p class="text-sm text-neutral-500 mt-0.5 mb-4">List the vehicles this part fits. Buyers see these on the part and matching vehicle pages.</p>
+
+            @if ($fitments->isNotEmpty())
+                <div class="flex flex-wrap gap-2 mb-4">
+                    @foreach ($fitments as $fitment)
+                        <span class="inline-flex items-center gap-2 text-sm bg-neutral-50 border border-neutral-200 rounded-full pl-3 pr-2 py-1">
+                            {{ $fitment->label() }}
+                            <form method="POST" action="{{ route('vendor.products.fitments.destroy', [$product, $fitment]) }}">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="text-neutral-400 hover:text-red-500" aria-label="Remove">✕</button>
+                            </form>
+                        </span>
+                    @endforeach
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('vendor.products.fitments.store', $product) }}" class="flex flex-wrap items-end gap-3">
+                @csrf
+                <div>
+                    <label class="block text-xs text-neutral-500 mb-1">Make</label>
+                    <select name="make_id" x-model="makeId" class="border border-neutral-200 rounded-lg px-3 py-2 text-sm">
+                        <option value="">Any make</option>
+                        <template x-for="m in makes" :key="m.id">
+                            <option :value="m.id" x-text="m.name"></option>
+                        </template>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-neutral-500 mb-1">Model</label>
+                    <select name="model_id" class="border border-neutral-200 rounded-lg px-3 py-2 text-sm" :disabled="!makeId">
+                        <option value="">Any model</option>
+                        <template x-for="mo in models" :key="mo.id">
+                            <option :value="mo.id" x-text="mo.name"></option>
+                        </template>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-neutral-500 mb-1">Year from</label>
+                    <input type="number" name="year_from" min="1900" max="2100" class="w-24 border border-neutral-200 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs text-neutral-500 mb-1">Year to</label>
+                    <input type="number" name="year_to" min="1900" max="2100" class="w-24 border border-neutral-200 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <button type="submit" class="bg-[#1A1A24] hover:bg-[#1A1A24]/90 text-white font-medium px-4 py-2 rounded-lg text-sm">Add</button>
+            </form>
+        </div>
     </div>
 </x-layouts.app>

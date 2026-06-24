@@ -95,7 +95,11 @@ class ProductController extends Controller
         $images     = $product->images()->orderBy('display_order')->get();
         $imageLimit = $this->tierService->vendorProductImageLimit($vendor);
 
-        return view('vendor.products.edit', compact('product', 'vendor', 'categories', 'images', 'imageLimit'));
+        // H10: vehicle-compatibility (fitments) management data.
+        $fitments = $product->fitments()->with(['make', 'vehicleModel'])->get();
+        $makes    = \App\Modules\Vehicles\Models\VehicleMake::with('models')->orderBy('name')->get();
+
+        return view('vendor.products.edit', compact('product', 'vendor', 'categories', 'images', 'imageLimit', 'fitments', 'makes'));
     }
 
     public function update(UpdateProductRequest $request, Product $product): RedirectResponse

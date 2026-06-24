@@ -36,8 +36,21 @@ class ProductController extends Controller
     {
         abort_unless($product->isActive(), 404);
 
-        $product->load(['vendor', 'category']);
+        $product->load(['vendor', 'category', 'fitments.make', 'fitments.vehicleModel']);
 
-        return view('products.show', compact('product'));
+        // H10: vehicles on sale that this part fits (cross-sell).
+        $compatibleVehicles = collect();
+        if ($product->fitments->isNotEmpty()) {
+            $compatibleVehicles = \App\Modules\Vehicles\Models\Vehicle::query()
+                ->active()
+                ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                ->compatibleWithFitments($product->fitments)
+                ->with(['make', 'vehicleModel', 'images'])
+                ->latest()
+                ->limit((int) config('compatibility.vehicles_per_part', 6))
+                ->get();
+        }
+
+        return view('products.show', compact('product', 'compatibleVehicles'));
     }
 }

@@ -326,6 +326,28 @@
         </div>
     </div>
 
+    {{-- H10: parts that fit this vehicle (cross-sell) --}}
+    @if ($compatibleParts->isNotEmpty())
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
+            <h2 class="text-xl font-semibold text-neutral-900 mb-5">Parts that fit this {{ $vehicle->make?->name }} {{ $vehicle->vehicleModel?->name }}</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                @foreach ($compatibleParts as $product)
+                    <a href="{{ route('products.show', $product) }}"
+                       class="bg-white border border-neutral-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
+                        <div class="bg-neutral-100 h-40 flex items-center justify-center overflow-hidden">
+                            <x-listing-thumbnail :cover="$product->coverImage()" :alt="$product->title" type="product" />
+                        </div>
+                        <div class="p-4">
+                            <div class="text-xs text-neutral-400 mb-1">{{ $product->category?->name }}</div>
+                            <h3 class="text-sm font-semibold text-neutral-900 line-clamp-2 group-hover:text-[#F0A820] transition-colors">{{ $product->title }}</h3>
+                            <div class="mt-3 text-sm font-bold text-neutral-900 tabular-nums">{{ $product->primaryPrice() }}</div>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     {{-- H7: other listings this buyer has recently viewed --}}
     <x-vehicle-row title="Recently viewed" :vehicles="$recentlyViewed" />
 </x-layouts.app>

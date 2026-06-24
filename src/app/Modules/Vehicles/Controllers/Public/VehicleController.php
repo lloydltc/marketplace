@@ -68,7 +68,16 @@ class VehicleController extends Controller
         $recentlyViewed = $this->recentlyViewed($recent->ids(), $vehicle->id);
         $recent->record($vehicle->id);
 
-        return view('vehicles.show', compact('vehicle', 'recentlyViewed'));
+        // H10: parts that fit this vehicle (cross-sell).
+        $compatibleParts = \App\Modules\Products\Models\Product::query()
+            ->active()->inStock()
+            ->compatibleWithVehicle($vehicle)
+            ->with(['vendor', 'category', 'images'])
+            ->latest()
+            ->limit((int) config('compatibility.parts_per_vehicle', 8))
+            ->get();
+
+        return view('vehicles.show', compact('vehicle', 'recentlyViewed', 'compatibleParts'));
     }
 
     /**

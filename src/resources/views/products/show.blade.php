@@ -114,7 +114,40 @@
                 <div class="prose prose-sm max-w-none text-neutral-700">
                     {!! nl2br(e($product->description)) !!}
                 </div>
+
+                {{-- H10: which vehicles this part fits --}}
+                @if ($product->fitments->isNotEmpty())
+                    <div class="mt-6 bg-neutral-50 border border-neutral-200 rounded-xl p-4">
+                        <div class="text-xs text-neutral-500 uppercase tracking-wide mb-2">Fits these vehicles</div>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($product->fitments as $fitment)
+                                <span class="text-xs font-medium bg-white border border-neutral-200 text-neutral-700 px-2.5 py-1 rounded-full">{{ $fitment->label() }}</span>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
+
+        {{-- H10: compatible vehicles currently on sale (cross-sell) --}}
+        @if ($compatibleVehicles->isNotEmpty())
+            <div class="mt-12">
+                <h2 class="text-xl font-semibold text-neutral-900 mb-5">Compatible vehicles for sale</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                    @foreach ($compatibleVehicles as $vehicle)
+                        <a href="{{ route('vehicles.show', $vehicle) }}"
+                           class="group bg-white border border-neutral-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
+                            <div class="aspect-video bg-neutral-100 flex items-center justify-center overflow-hidden">
+                                <x-listing-thumbnail :cover="$vehicle->coverImage()" :alt="$vehicle->displayTitle()" type="vehicle" />
+                            </div>
+                            <div class="p-4 flex flex-col flex-1">
+                                <h3 class="text-sm font-semibold text-neutral-900 group-hover:text-[#F0A820] transition-colors leading-snug mb-2">{{ $vehicle->displayTitle() }}</h3>
+                                <div class="mt-auto text-base font-bold text-neutral-900 tabular-nums">{{ $vehicle->primaryPrice() }}</div>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        @endif
     </div>
 </x-layouts.app>

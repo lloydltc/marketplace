@@ -377,6 +377,39 @@ class Vehicle extends Model
         return $type ? $query->where('vehicle_type', $type) : $query;
     }
 
+    /**
+     * H10: vehicles matched by any of a part's fitment rules. Each rule contributes
+     * an OR group (make/model/year-range), so a vehicle qualifies if it satisfies
+     * at least one rule.
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Modules\Products\Models\ProductFitment>  $fitments
+     */
+    public function scopeCompatibleWithFitments(Builder $query, $fitments): Builder
+    {
+        if ($fitments->isEmpty()) {
+            return $query->whereRaw('1 = 0'); // a part with no fitments matches nothing
+        }
+
+        return $query->where(function ($outer) use ($fitments) {
+            foreach ($fitments as $fitment) {
+                $outer->orWhere(function ($q) use ($fitment) {
+                    if ($fitment->make_id) {
+                        $q->where('make_id', $fitment->make_id);
+                    }
+                    if ($fitment->model_id) {
+                        $q->where('model_id', $fitment->model_id);
+                    }
+                    if ($fitment->year_from) {
+                        $q->where('year', '>=', $fitment->year_from);
+                    }
+                    if ($fitment->year_to) {
+                        $q->where('year', '<=', $fitment->year_to);
+                    }
+                });
+            }
+        });
+    }
+
     // ─── Pricing (either currency; sellers aren't forced to price in ZWL) ────────
 
     public function hasUsd(): bool

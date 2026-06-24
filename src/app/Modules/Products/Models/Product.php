@@ -107,6 +107,12 @@ class Product extends Model
         return $this->hasMany(ProductImage::class)->orderBy('display_order');
     }
 
+    /** H10: vehicle-compatibility rules for this part. */
+    public function fitments(): HasMany
+    {
+        return $this->hasMany(ProductFitment::class);
+    }
+
     /** First image by display order. Uses the loaded `images` relation when
      *  eager-loaded (avoids N+1 on listing/landing pages). */
     public function coverImage(): ?ProductImage
@@ -144,6 +150,12 @@ class Product extends Model
     public function scopeFbsEligible(Builder $query): Builder
     {
         return $query->whereIn('fulfilment_type', ['fbs', 'both']);
+    }
+
+    /** H10: parts whose fitment rules match the given vehicle. */
+    public function scopeCompatibleWithVehicle(Builder $query, \App\Modules\Vehicles\Models\Vehicle $vehicle): Builder
+    {
+        return $query->whereHas('fitments', fn ($f) => $f->matchingVehicle($vehicle));
     }
 
     // ─── Status helpers ───────────────────────────────────────────────────────
