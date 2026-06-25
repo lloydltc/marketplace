@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             PromotionPackageSeeder::class,
             SuperAdminSeeder::class,
             CategorySeeder::class,
+            PartCategorySeeder::class,
             VehicleMakeSeeder::class,
             VehicleTaxonomySeeder::class,
             FeatureDefinitionSeeder::class,
