@@ -1,246 +1,140 @@
 <x-layouts.app>
-    <x-slot:title>Vehicles for Sale</x-slot:title>
+    <x-slot:title>Vehicles for sale</x-slot:title>
+
+    @php
+        // Active-filter chips — each maps to a label and a "remove" URL.
+        $makeName = request('make_id') ? optional($makes->firstWhere('id', request('make_id')))->name : null;
+        $chips = collect([
+            ['key' => 'search',       'label' => request('search') ? 'Search: ' . request('search') : null],
+            ['key' => 'make_id',      'label' => $makeName ? 'Make: ' . $makeName : null],
+            ['key' => 'body_type',    'label' => request('body_type') ? 'Body: ' . ucfirst(str_replace('_', ' ', request('body_type'))) : null],
+            ['key' => 'transmission', 'label' => request('transmission') ? 'Transmission: ' . ucfirst(request('transmission')) : null],
+            ['key' => 'fuel_type',    'label' => request('fuel_type') ? 'Fuel: ' . ucfirst(request('fuel_type')) : null],
+            ['key' => 'condition',    'label' => request('condition') ? 'Condition: ' . ucfirst(request('condition')) : null],
+            ['key' => 'year_min',     'label' => request('year_min') ? 'Year ≥ ' . request('year_min') : null],
+            ['key' => 'year_max',     'label' => request('year_max') ? 'Year ≤ ' . request('year_max') : null],
+            ['key' => 'min_price',    'label' => request('min_price') ? 'Min $' . number_format((int) request('min_price')) : null],
+            ['key' => 'max_price',    'label' => request('max_price') ? 'Max $' . number_format((int) request('max_price')) : null],
+        ])->filter(fn ($c) => $c['label']);
+    @endphp
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-
-        <div class="mb-6">
-            <h1 class="text-3xl font-semibold text-neutral-900">
-                {{ request('vehicle_type') ? config('vehicle_types.types.' . request('vehicle_type') . '.plural', 'Vehicles') . ' for Sale' : 'Vehicles for Sale' }}
+        <header class="mb-6">
+            <h1 class="text-h1 text-[rgb(var(--text-strong))]">
+                {{ request('vehicle_type') ? config('vehicle_types.types.' . request('vehicle_type') . '.plural', 'Vehicles') . ' for sale' : 'Vehicles for sale' }}
             </h1>
-            <p class="text-sm text-neutral-500 mt-1">Browse from dealers and private sellers.</p>
-        </div>
+            <p class="text-body-sm text-[rgb(var(--text-muted))] mt-1">Browse from dealers and private sellers.</p>
+        </header>
 
-        {{-- H0/H6: listing-type tabs (with live counts) --}}
+        {{-- Listing-type tabs (H0/H6) --}}
         @include('partials.vehicle-type-tabs')
 
-        {{-- H6: browse by body type --}}
+        {{-- Browse by body type (H6) --}}
         @if (! empty($bodyTypeCounts))
-            <div class="flex flex-wrap gap-2 mb-5">
+            <div class="flex flex-wrap gap-2 mb-6">
                 @foreach ($bodyTypeCounts as $body => $count)
                     <a href="{{ route('vehicles.index', array_merge(request()->except(['page']), ['body_type' => $body])) }}"
-                       class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium transition-colors {{ request('body_type') === $body ? 'bg-[#F0A820]/15 text-[#B5790F] border border-[#F0A820]/40' : 'bg-neutral-50 border border-neutral-200 text-neutral-600 hover:border-neutral-400' }}">
+                       class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-caption font-medium transition-colors {{ request('body_type') === $body ? 'bg-[rgb(var(--brand)/0.15)] text-brand border border-[rgb(var(--brand)/0.4)]' : 'bg-surface border border-base text-[rgb(var(--text-muted))] hover:border-strong' }}">
                         <span class="capitalize">{{ str_replace('_', ' ', $body) }}</span>
-                        <span class="text-neutral-400 tabular-nums">{{ number_format($count) }}</span>
+                        <span class="text-[rgb(var(--text-muted))] tabular-nums">{{ number_format($count) }}</span>
                     </a>
                 @endforeach
             </div>
         @endif
 
-        <div x-data="{ filtersOpen: false }" class="mb-3">
-            {{-- Mobile: filters live in a drawer, not a long scroll (UI_STANDARDS) --}}
-            <button type="button" @click="filtersOpen = !filtersOpen"
-                    class="sm:hidden mb-3 w-full flex items-center justify-center gap-2 border border-neutral-300 rounded-lg px-4 py-2 text-sm font-medium text-neutral-700">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4h18M6 8h12M9 12h6M11 16h2"/></svg>
-                <span x-text="filtersOpen ? 'Hide filters' : 'Filters'">Filters</span>
-            </button>
-        <form method="GET" class="sm:block space-y-3" :class="{ 'hidden': !filtersOpen }"
-              x-data="{
-                  endpoint: @js(route('search.vehicles.count')),
-                  count: {{ $vehicles->total() }},
-                  loading: false,
-                  get label() {
-                      if (this.loading) return 'Counting…';
-                      return 'Show ' + Number(this.count).toLocaleString() + (this.count === 1 ? ' vehicle' : ' vehicles');
-                  },
-                  refresh() {
-                      this.loading = true;
-                      const params = new URLSearchParams(new FormData(this.$root)).toString();
-                      fetch(this.endpoint + '?' + params, { headers: { 'Accept': 'application/json' } })
-                          .then(r => r.json())
-                          .then(d => { this.count = d.count; })
-                          .catch(() => {})
-                          .finally(() => { this.loading = false; });
-                  }
-              }"
-              x-on:change="refresh()" x-on:input.debounce.500ms="refresh()">
-            <div class="flex flex-wrap gap-3">
-                <x-search-autocomplete name="search" :endpoint="route('search.vehicles')"
-                                       :value="request('search')" placeholder="Search make, model or year…" />
+        <div x-data="{ filtersOpen: false }" class="lg:grid lg:grid-cols-[18rem_1fr] lg:gap-8">
 
-                <select name="make_id"
-                        class="border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
-                    <option value="">All makes</option>
-                    @foreach ($makes as $make)
-                        <option value="{{ $make->id }}" @selected(request('make_id') === $make->id)>{{ $make->name }}</option>
-                    @endforeach
-                </select>
+            {{-- Filter rail (lg+) / bottom-sheet (mobile) --}}
+            <div>
+                {{-- mobile backdrop --}}
+                <div x-show="filtersOpen" x-cloak x-transition.opacity @click="filtersOpen = false"
+                     class="lg:hidden fixed inset-0 bg-black/50 z-drawer"></div>
 
-                <select name="condition"
-                        class="border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
-                    <option value="">All conditions</option>
-                    <option value="new"     @selected(request('condition') === 'new')>New</option>
-                    <option value="used"    @selected(request('condition') === 'used')>Used</option>
-                    <option value="salvage" @selected(request('condition') === 'salvage')>Salvage</option>
-                    <option value="rebuilt" @selected(request('condition') === 'rebuilt')>Rebuilt</option>
-                </select>
-
-                <select name="fuel_type"
-                        class="border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
-                    <option value="">All fuel types</option>
-                    <option value="petrol"   @selected(request('fuel_type') === 'petrol')>Petrol</option>
-                    <option value="diesel"   @selected(request('fuel_type') === 'diesel')>Diesel</option>
-                    <option value="electric" @selected(request('fuel_type') === 'electric')>Electric</option>
-                    <option value="hybrid"   @selected(request('fuel_type') === 'hybrid')>Hybrid</option>
-                </select>
-
-                <select name="sort"
-                        class="border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
-                    <option value="latest"    @selected(request('sort', 'latest') === 'latest')>Latest</option>
-                    <option value="price_asc" @selected(request('sort') === 'price_asc')>Price: Low to High</option>
-                    <option value="price_desc" @selected(request('sort') === 'price_desc')>Price: High to Low</option>
-                    <option value="year_desc" @selected(request('sort') === 'year_desc')>Year: Newest</option>
-                    <option value="mileage_asc" @selected(request('sort') === 'mileage_asc')>Mileage: Lowest</option>
-                </select>
+                <aside
+                    class="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto sd-rail lg:bg-transparent lg:p-0 lg:shadow-none lg:rounded-none lg:translate-y-0
+                           fixed inset-x-0 bottom-0 z-drawer max-h-[85vh] overflow-y-auto bg-surface rounded-t-2xl p-5 shadow-e4 transition-transform duration-300 ease-standard"
+                    :class="filtersOpen ? 'translate-y-0' : 'translate-y-full lg:translate-y-0'"
+                    role="dialog" aria-label="Filters">
+                    <div class="flex items-center justify-between mb-4 lg:mb-3">
+                        <h2 class="text-h3 text-[rgb(var(--text-strong))]">Filters</h2>
+                        <x-icon-button label="Close filters" class="lg:hidden" @click="filtersOpen = false">
+                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M6 18L18 6" /></svg>
+                        </x-icon-button>
+                    </div>
+                    @include('partials.vehicle-filters')
+                </aside>
             </div>
 
-            {{-- Advanced filters --}}
-            <div class="flex flex-wrap gap-3">
-                <select name="body_type"
-                        class="border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
-                    <option value="">All body types</option>
-                    @foreach (['sedan','hatchback','suv','pickup','van','minivan','wagon','coupe','convertible','bus','truck','other'] as $body)
-                        <option value="{{ $body }}" @selected(request('body_type') === $body)>{{ ucfirst($body) }}</option>
-                    @endforeach
-                </select>
-                <select name="transmission"
-                        class="border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
-                    <option value="">Any transmission</option>
-                    <option value="manual"    @selected(request('transmission') === 'manual')>Manual</option>
-                    <option value="automatic" @selected(request('transmission') === 'automatic')>Automatic</option>
-                    <option value="cvt"       @selected(request('transmission') === 'cvt')>CVT</option>
-                </select>
-                <input type="number" name="year_min" value="{{ request('year_min') }}" placeholder="Year from" min="1900"
-                       class="w-28 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
-                <input type="number" name="year_max" value="{{ request('year_max') }}" placeholder="Year to" min="1900"
-                       class="w-28 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
-                <input type="number" name="min_price" value="{{ request('min_price') }}" placeholder="Min price" min="0"
-                       class="w-32 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
-                <input type="number" name="max_price" value="{{ request('max_price') }}" placeholder="Max price" min="0"
-                       class="w-32 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
-
-            </div>
-
-            {{-- Dynamic feature facets (D3 — driven by D4's filterable definitions) --}}
-            @if (isset($filterableFeatures) && $filterableFeatures->isNotEmpty())
-                <div class="flex flex-wrap gap-3 pt-3 border-t border-neutral-100">
-                    @foreach ($filterableFeatures as $def)
-                        @php $fv = request("features.{$def->id}"); @endphp
-                        @if ($def->type === 'boolean')
-                            <select name="features[{{ $def->id }}]"
-                                    class="border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
-                                <option value="">{{ $def->name }}: any</option>
-                                <option value="1" @selected($fv === '1')>{{ $def->name }}: Yes</option>
-                                <option value="0" @selected($fv === '0')>{{ $def->name }}: No</option>
-                            </select>
-                        @elseif ($def->type === 'enum')
-                            <select name="features[{{ $def->id }}]"
-                                    class="border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
-                                <option value="">{{ $def->name }}: any</option>
-                                @foreach (($def->options ?? []) as $opt)
-                                    <option value="{{ $opt }}" @selected((string) $fv === (string) $opt)>{{ $def->name }}: {{ $opt }}</option>
-                                @endforeach
-                            </select>
-                        @elseif ($def->type === 'number')
-                            <input type="number" name="features[{{ $def->id }}]" value="{{ $fv }}"
-                                   placeholder="{{ $def->name }}{{ $def->unit ? ' (' . $def->unit . ')' : '' }}" min="0"
-                                   class="w-40 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
+            {{-- Results column --}}
+            <div>
+                {{-- Result bar: count · sort · mobile filters trigger --}}
+                <div class="flex items-center justify-between gap-3 mb-4">
+                    <p class="text-body-sm text-[rgb(var(--text-muted))] tabular-nums">
+                        @if ($vehicles->total() > 0)
+                            {{ number_format($vehicles->total()) }} {{ Str::plural('vehicle', $vehicles->total()) }} found
+                        @else
+                            No vehicles found
                         @endif
-                    @endforeach
-                </div>
-            @endif
+                    </p>
 
-            {{-- Actions --}}
-            <div class="flex flex-wrap items-center gap-3 pt-1">
-                <button type="submit"
-                        class="bg-[#F0A820] hover:bg-[#F0A820]/90 text-[#1A1A24] font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
-                    <span x-text="label">Search</span>
-                </button>
-                @if (request()->hasAny(['search', 'make_id', 'condition', 'fuel_type', 'sort', 'body_type', 'transmission', 'year_min', 'year_max', 'min_price', 'max_price', 'features']))
-                    <a href="{{ route('vehicles.index') }}"
-                       class="text-sm text-neutral-500 hover:text-neutral-700 px-2 py-2 self-center">Clear</a>
+                    <div class="flex items-center gap-2">
+                        {{-- Sort: own GET form, preserves current filters --}}
+                        <form method="GET" action="{{ route('vehicles.index') }}" class="w-40 sm:w-48">
+                            @foreach (request()->except(['sort', 'page']) as $k => $v)
+                                @if (is_array($v))
+                                    @foreach ($v as $kk => $vv)<input type="hidden" name="{{ $k }}[{{ $kk }}]" value="{{ $vv }}">@endforeach
+                                @else
+                                    <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+                                @endif
+                            @endforeach
+                            <label for="sort" class="sr-only">Sort</label>
+                            <x-select id="sort" name="sort" onchange="this.form.submit()">
+                                <option value="latest" @selected(request('sort', 'latest') === 'latest')>Latest</option>
+                                <option value="price_asc" @selected(request('sort') === 'price_asc')>Price: low to high</option>
+                                <option value="price_desc" @selected(request('sort') === 'price_desc')>Price: high to low</option>
+                                <option value="year_desc" @selected(request('sort') === 'year_desc')>Year: newest</option>
+                                <option value="mileage_asc" @selected(request('sort') === 'mileage_asc')>Mileage: lowest</option>
+                            </x-select>
+                        </form>
+
+                        <x-button variant="outline" size="md" class="lg:hidden" @click="filtersOpen = true">
+                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4h18M6 8h12M9 12h6M11 16h2" /></svg>
+                            Filters
+                        </x-button>
+                    </div>
+                </div>
+
+                {{-- Active-filter chips --}}
+                @if ($chips->isNotEmpty())
+                    <div class="flex flex-wrap items-center gap-2 mb-5">
+                        @foreach ($chips as $chip)
+                            <a href="{{ route('vehicles.index', request()->except([$chip['key'], 'page'])) }}"
+                               class="inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1 text-caption text-[rgb(var(--text))] hover:bg-[rgb(var(--border))] transition-colors">
+                                {{ $chip['label'] }}
+                                <span aria-hidden="true" class="text-[rgb(var(--text-muted))]">✕</span>
+                                <span class="sr-only">Remove filter</span>
+                            </a>
+                        @endforeach
+                        <a href="{{ route('vehicles.index', request('vehicle_type') ? ['vehicle_type' => request('vehicle_type')] : []) }}"
+                           class="text-caption font-medium text-[rgb(var(--info))] hover:underline px-1">Clear all</a>
+                    </div>
+                @endif
+
+                @if ($vehicles->isEmpty())
+                    <div class="py-10 space-y-6">
+                        <x-empty title="No vehicles match your search" message="Try widening your filters, or let sellers come to you." />
+                        <x-rfq-cta context="vehicles" :query="request('search', '')" />
+                    </div>
+                @else
+                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                        @foreach ($vehicles as $vehicle)
+                            <x-vehicle-card :vehicle="$vehicle" />
+                        @endforeach
+                    </div>
+
+                    <x-pagination :paginator="$vehicles->withQueryString()" class="mt-8" />
                 @endif
             </div>
-        </form>
         </div>
-
-        {{-- Save current search (signed-in users, active filters only) --}}
-        <div class="mb-8 min-h-[2rem]">
-            <x-save-search type="vehicles" :active="request()->hasAny(['search', 'make_id', 'condition', 'fuel_type', 'body_type', 'transmission', 'year_min', 'year_max', 'min_price', 'max_price'])" />
-        </div>
-
-        @if ($vehicles->isEmpty())
-            <div class="py-16 space-y-6">
-                <p class="text-neutral-500 text-center">No vehicles match your search.</p>
-                <x-rfq-cta context="vehicles" :query="request('search', '')" />
-            </div>
-        @else
-            <p class="text-sm text-neutral-500 mb-4 tabular-nums">
-                {{ number_format($vehicles->total()) }} {{ Str::plural('vehicle', $vehicles->total()) }} found
-            </p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                @foreach ($vehicles as $vehicle)
-                    <a href="{{ route('vehicles.show', $vehicle) }}"
-                       class="group bg-white border border-neutral-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
-                        <div class="aspect-video bg-neutral-100 flex items-center justify-center overflow-hidden">
-                            <x-listing-thumbnail :cover="$vehicle->coverImage()" :alt="$vehicle->displayTitle()" type="vehicle" />
-                        </div>
-
-                        <div class="p-4 flex flex-col flex-1">
-                            <div class="flex flex-wrap gap-1 mb-2">
-                                @if ($vehicle->isFeatured())
-                                    <span class="inline-flex items-center gap-1 text-xs font-semibold bg-[#F0A820]/15 text-[#B5790F] px-2 py-0.5 rounded-full">★ Featured</span>
-                                @endif
-                                @if ($vehicle->is_recent_import)
-                                    <span class="text-xs font-semibold bg-[#3DB8E8]/15 text-[#1E7FA8] px-2 py-0.5 rounded-full">Recent import</span>
-                                @endif
-                                <x-expiry-badge :vehicle="$vehicle" />
-                            </div>
-                            <div class="flex items-start justify-between gap-2 mb-1">
-                                <h2 class="text-sm font-semibold text-neutral-900 group-hover:text-[#F0A820] transition-colors leading-snug">
-                                    {{ $vehicle->displayTitle() }}
-                                </h2>
-                                <span class="shrink-0 text-xs capitalize text-neutral-500">{{ $vehicle->condition }}</span>
-                            </div>
-
-                            <div class="text-xs text-neutral-500 space-x-2 mb-3">
-                                <span class="capitalize">{{ $vehicle->body_type }}</span>
-                                <span>·</span>
-                                <span class="uppercase">{{ $vehicle->transmission }}</span>
-                                <span>·</span>
-                                <span class="capitalize">{{ $vehicle->fuel_type }}</span>
-                            </div>
-
-                            <div class="mt-auto flex items-end justify-between">
-                                <div>
-                                    <div class="text-base font-bold text-neutral-900 tabular-nums">
-                                        {{ $vehicle->primaryPrice() }}
-                                    </div>
-                                    @if ($vehicle->secondaryPrice())
-                                        <div class="text-xs text-neutral-400 tabular-nums">
-                                            {{ $vehicle->secondaryPrice() }}
-                                        </div>
-                                    @endif
-                                </div>
-                                <div class="text-right">
-                                    @if ($vehicle->isListedByVendor())
-                                        <span class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">Dealer</span>
-                                    @else
-                                        <span class="text-xs bg-purple-50 text-purple-600 px-2 py-0.5 rounded-full">Private</span>
-                                    @endif
-                                    <x-unverified-badge :verified="$vehicle->ownerIsVerified()" class="mt-1" />
-                                    <div class="text-xs text-neutral-400 mt-1 tabular-nums">
-                                        {{ number_format($vehicle->mileage) }} km
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                @endforeach
-            </div>
-
-            <div class="mt-8">
-                {{ $vehicles->withQueryString()->links() }}
-            </div>
-        @endif
     </div>
 </x-layouts.app>

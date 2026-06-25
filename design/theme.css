@@ -1,0 +1,89 @@
+/* Salma Drive — theme.css
+ * Import BEFORE Tailwind utilities. Colours are RGB triplets so Tailwind
+ * opacity modifiers work: bg-[rgb(var(--bg-surface))] , text-[rgb(var(--text)/0.7)]
+ * Theme is class-based (.dark) and resolved system-aware by the head script. */
+
+:root {
+  /* surfaces */
+  --bg-base: 246 247 249;
+  --bg-surface: 255 255 255;
+  --bg-surface-2: 236 238 241;
+  --bg-sidebar: 26 26 36;        /* dark sidebar in BOTH themes */
+  /* lines */
+  --border: 220 223 229;
+  --border-strong: 200 205 214;
+  /* text */
+  --text-strong: 15 15 22;
+  --text: 49 54 67;
+  --text-muted: 90 96 112;
+  /* brand */
+  --brand: 240 168 32;
+  --brand-hover: 208 141 18;
+  --text-on-brand: 15 15 22;
+  --ring: 240 168 32;
+  /* status */
+  --success: 46 189 122;
+  --info: 31 143 190;
+  --danger: 212 41 90;
+  --warning: 234 122 28;
+  /* elevation (swapped in dark) */
+  --shadow-e1: 0 1px 2px rgba(8,8,16,.06), 0 1px 3px rgba(8,8,16,.10);
+  --shadow-e2: 0 2px 6px rgba(8,8,16,.08), 0 4px 12px rgba(8,8,16,.10);
+  --shadow-e3: 0 8px 24px rgba(8,8,16,.12);
+  --shadow-e4: 0 16px 48px rgba(8,8,16,.18);
+}
+
+.dark {
+  --bg-base: 8 8 16;
+  --bg-surface: 26 26 36;
+  --bg-surface-2: 49 54 67;
+  --bg-sidebar: 8 8 16;
+  --border: 49 54 67;
+  --border-strong: 69 75 89;
+  --text-strong: 246 247 249;
+  --text: 220 223 229;
+  --text-muted: 156 163 176;
+  --brand: 240 168 32;
+  --brand-hover: 242 185 60;
+  --text-on-brand: 15 15 22;
+  --ring: 242 185 60;
+  --success: 46 189 122;
+  --info: 61 184 232;
+  --danger: 232 70 122;
+  --warning: 240 144 47;
+  --shadow-e1: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-e2: 0 4px 12px rgba(0,0,0,.45);
+  --shadow-e3: 0 8px 24px rgba(0,0,0,.5);
+  --shadow-e4: 0 16px 48px rgba(0,0,0,.6);
+}
+
+/* base element styles */
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background-color: rgb(var(--bg-base));
+    color: rgb(var(--text));
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,h2,h3 { font-family: "Sora", system-ui, sans-serif; color: rgb(var(--text-strong)); }
+  /* numerics align */
+  .tabular, .price, [data-numeric] { font-variant-numeric: tabular-nums; }
+  /* visible keyboard focus everywhere */
+  :focus-visible {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  ::selection { background: rgb(var(--brand) / .25); }
+}
+
+/* honour reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

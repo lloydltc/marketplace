@@ -17,12 +17,26 @@
     <meta property="og:image" content="{{ $ogImage ?? asset('logo/logo_white_trans.png') }}">
     <meta name="twitter:card" content="summary_large_image">
 
+    {{-- No-FOUC theme resolve — runs before paint (design system §2.4) --}}
+    <script>
+        (function () {
+            const stored = localStorage.getItem('theme'); // 'light' | 'dark' | null(system)
+            const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', stored ? stored === 'dark' : sysDark);
+        })();
+    </script>
+
+    {{-- Display: Sora · Body/UI: Plus Jakarta Sans (TODO: self-host for mobile perf) --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     <style>[x-cloak]{display:none!important}</style>
     {{ $head ?? '' }}
 </head>
-<body class="h-full bg-neutral-50 font-sans antialiased">
+<body class="h-full bg-base font-sans antialiased">
 
 @inject('nav', 'App\Support\Navigation')
 @inject('cart', 'App\Modules\Cart\Services\CartService')
@@ -59,6 +73,8 @@
                         @endif
                     </a>
                 @endif
+
+                <x-theme-toggle />
 
                 @auth
                     <span class="text-neutral-400 text-sm hidden md:block">
@@ -148,6 +164,9 @@
 <main>
     {{ $slot }}
 </main>
+
+{{-- Toast hub (design system) — listens for window 'toast' events app-wide --}}
+<x-toast />
 
 {{-- H7: floating compare bar (shows when the buyer has vehicles queued to compare) --}}
 @include('partials.compare-bar')

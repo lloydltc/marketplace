@@ -1,2 +1,9 @@
 @import 'tailwindcss';
+@import './theme.css';
+@config '../../tailwind.config.js';
 
+/* Reusable: horizontal carousels/rails hide their scrollbar but stay scrollable. */
+@layer utilities {
+    .sd-rail { scrollbar-width: none; -ms-overflow-style: none; }
+    .sd-rail::-webkit-scrollbar { display: none; }
+}

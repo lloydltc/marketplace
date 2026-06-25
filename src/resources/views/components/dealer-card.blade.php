@@ -4,32 +4,33 @@
 ])
 
 <a href="{{ $dealer->storefrontUrl() }}"
-   class="group bg-white border {{ $featured ? 'border-[#F0A820]/50' : 'border-neutral-200' }} rounded-xl shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col">
+   {{ $attributes->class('group flex flex-col bg-surface border rounded-lg shadow-e1 p-5 transition duration-200 ease-standard hover:shadow-e2 hover:-translate-y-0.5 motion-reduce:hover:translate-y-0 '
+       . ($featured ? 'border-[rgb(var(--brand)/0.5)]' : 'border-base')) }}>
     <div class="flex items-center gap-3 mb-3">
-        <div class="w-12 h-12 rounded-lg bg-neutral-100 flex items-center justify-center overflow-hidden shrink-0">
+        <div class="size-12 rounded-md bg-surface-2 grid place-items-center overflow-hidden shrink-0">
             @if ($dealer->logoUrl())
                 <img src="{{ $dealer->logoUrl() }}" alt="{{ $dealer->name }}" class="w-full h-full object-cover">
             @else
-                <span class="text-lg font-bold text-neutral-400">{{ Str::upper(Str::substr($dealer->name, 0, 1)) }}</span>
+                <span class="text-h4 font-bold text-[rgb(var(--text-muted))]">{{ Str::upper(Str::substr($dealer->name, 0, 1)) }}</span>
             @endif
         </div>
         <div class="min-w-0">
-            <h3 class="font-semibold text-neutral-900 group-hover:text-[#F0A820] transition-colors truncate">{{ $dealer->name }}</h3>
-            <div class="flex items-center gap-1.5 mt-0.5">
-                <span class="text-[11px] font-medium bg-[#2EBD7A]/15 text-[#1B8F5A] px-1.5 py-0.5 rounded-full">✓ Verified</span>
+            <h3 class="text-h4 text-[rgb(var(--text-strong))] group-hover:text-brand transition-colors truncate">{{ $dealer->name }}</h3>
+            <div class="flex items-center gap-1.5 mt-1">
+                <x-badge variant="verified" />
                 @if ($featured || $dealer->isFeaturedDealer())
-                    <span class="text-[11px] font-semibold bg-[#F0A820]/15 text-[#B5790F] px-1.5 py-0.5 rounded-full">★ Featured</span>
+                    <x-badge variant="featured" />
                 @endif
             </div>
         </div>
     </div>
 
     @if ($dealer->description)
-        <p class="text-sm text-neutral-500 line-clamp-2 mb-3">{{ $dealer->description }}</p>
+        <p class="text-body-sm text-[rgb(var(--text-muted))] line-clamp-2 mb-3">{{ $dealer->description }}</p>
     @endif
 
-    <div class="mt-auto flex items-center gap-4 text-xs text-neutral-500 tabular-nums">
-        <span>{{ number_format($dealer->live_vehicles_count ?? 0) }} vehicles</span>
-        <span>{{ number_format($dealer->live_products_count ?? 0) }} parts</span>
+    <div class="mt-auto flex items-center gap-4 text-caption text-[rgb(var(--text-muted))] tabular-nums">
+        <span><strong class="text-[rgb(var(--text))]">{{ number_format($dealer->live_vehicles_count ?? 0) }}</strong> vehicles</span>
+        <span><strong class="text-[rgb(var(--text))]">{{ number_format($dealer->live_products_count ?? 0) }}</strong> parts</span>
     </div>
 </a>

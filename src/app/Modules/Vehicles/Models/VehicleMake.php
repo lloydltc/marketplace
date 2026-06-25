@@ -2,6 +2,7 @@
 
 namespace App\Modules\Vehicles\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
@@ -12,7 +13,12 @@ class VehicleMake extends Model
 
     protected $keyType = 'string';
 
-    protected $fillable = ['name', 'slug', 'sort_order'];
+    protected $fillable = ['name', 'slug', 'logo', 'vehicle_type', 'sort_order', 'is_active'];
+
+    protected function casts(): array
+    {
+        return ['is_active' => 'boolean'];
+    }
 
     protected static function booted(): void
     {
@@ -21,6 +27,11 @@ class VehicleMake extends Model
                 $make->id = (string) Str::uuid();
             }
         });
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
     }
 
     public function models(): HasMany

@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             SuperAdminSeeder::class,
             CategorySeeder::class,
             VehicleMakeSeeder::class,
+            VehicleTaxonomySeeder::class,
             FeatureDefinitionSeeder::class,
         ]);
     }

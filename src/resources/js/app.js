@@ -1,4 +1,7 @@
 import Alpine from 'alpinejs';
+import focus from '@alpinejs/focus';
+
+Alpine.plugin(focus);
 
 /**
  * Live search autocomplete. Fetches JSON suggestions from `endpoint` and,

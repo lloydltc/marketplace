@@ -41,6 +41,17 @@ Route::controller(PageController::class)->prefix('p')->name('pages.')->group(fun
 // Public landing — guests can browse the marketplace before authenticating
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+// Design-system component gallery — non-production only (renders every base component)
+if (! app()->environment('production')) {
+    Route::get('_dev/components', function () {
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            range(1, 10), 48, 10, 2, ['path' => url('_dev/components')]
+        );
+
+        return view('dev.components', compact('paginator'));
+    })->name('dev.components');
+}
+
 // Public product browsing (no auth required)
 Route::get('products', [PublicProductController::class, 'index'])->name('products.index');
 Route::get('products/{product}', [PublicProductController::class, 'show'])->name('products.show');
