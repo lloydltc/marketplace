@@ -9,7 +9,7 @@
     screens that need full stacked-card collapse apply that at the call site.
 --}}
 <div {{ $attributes->class('w-full overflow-x-auto rounded-lg border border-base bg-surface') }}>
-    <table class="w-full text-body-sm border-collapse {{ $zebra ? '[&_tbody_tr:nth-child(odd)]:bg-surface-2/50' : '' }}">
+    <table class="w-full text-body-sm border-collapse {{ $zebra ? '[&_tbody_tr:nth-child(odd)]:bg-[rgb(var(--bg-surface-2)/0.5)]' : '' }}">
         @isset($head)
             <thead class="sticky top-0 z-sticky bg-surface-2 text-[rgb(var(--text-muted))]">
                 <tr class="[&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:font-semibold [&_th]:text-overline [&_th]:uppercase">

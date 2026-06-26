@@ -99,6 +99,11 @@ class Part extends Model
         return $this->hasMany(PartAlternative::class);
     }
 
+    public function fitments(): HasMany
+    {
+        return $this->hasMany(PartFitment::class);
+    }
+
     /** Vendor offerings of this canonical part (existing products table). */
     public function offerings(): HasMany
     {
@@ -110,6 +115,30 @@ class Part extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active');
+    }
+
+    /**
+     * PM3: parts compatible with a vehicle selection — universal parts, or parts
+     * with a fitment rule matching the selection.
+     *
+     * @param  array{make_id: string, model_id: string, year?: int|null, generation_id?: string|null, variant_id?: string|null, engine_id?: string|null, transmission_id?: string|null}  $selection
+     */
+    public function scopeCompatibleWith(Builder $query, array $selection): Builder
+    {
+        return $query->where(function ($q) use ($selection) {
+            $q->where('is_universal', true)
+              ->orWhereHas('fitments', fn ($f) => $f->matchingSelection($selection));
+        });
+    }
+
+    /** PM3: does this part fit the given vehicle selection? */
+    public function fitsSelection(array $selection): bool
+    {
+        if ($this->is_universal) {
+            return true;
+        }
+
+        return $this->fitments()->matchingSelection($selection)->exists();
     }
 
     public function isActive(): bool

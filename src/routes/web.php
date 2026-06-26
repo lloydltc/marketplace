@@ -78,6 +78,13 @@ Route::get('search/vehicles', [SearchController::class, 'vehicles'])->name('sear
 // H6: live inventory count for the vehicle filter form (JSON)
 Route::get('search/vehicles/count', [SearchController::class, 'vehicleCount'])->name('search.vehicles.count');
 
+// PM3: cascading fitment selector — JSON cascade + session select/clear (public)
+Route::get('fitment/models', [\App\Http\Controllers\FitmentController::class, 'models'])->name('fitment.models');
+Route::get('fitment/generations', [\App\Http\Controllers\FitmentController::class, 'generations'])->name('fitment.generations');
+Route::get('fitment/variants', [\App\Http\Controllers\FitmentController::class, 'variants'])->name('fitment.variants');
+Route::post('fitment/select', [\App\Http\Controllers\FitmentController::class, 'select'])->name('fitment.select');
+Route::post('fitment/clear', [\App\Http\Controllers\FitmentController::class, 'clear'])->name('fitment.clear');
+
 // H11: report a listing for moderation (public, rate-limited)
 Route::post('vehicles/{vehicle}/report', [\App\Http\Controllers\ReportController::class, 'vehicle'])
     ->middleware('throttle:10,1')->name('vehicles.report');
