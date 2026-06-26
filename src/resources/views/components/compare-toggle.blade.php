@@ -7,7 +7,7 @@
     $inList = app(\App\Support\CompareList::class)->has($vehicle->id);
     $shell = $overlay
         ? 'bg-[rgb(var(--bg-sidebar)/0.72)] text-white backdrop-blur-sm'
-        : 'bg-surface border border-base text-[rgb(var(--text))]';
+        : 'bg-surface border border-line text-[rgb(var(--text))]';
 @endphp
 
 <form method="POST" action="{{ route($inList ? 'compare.remove' : 'compare.add', $vehicle) }}" {{ $attributes }}>

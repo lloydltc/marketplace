@@ -4,7 +4,7 @@
 
 @php $inStock = ($product->quantity ?? 0) > 0; @endphp
 
-<article {{ $attributes->class('group relative flex flex-col bg-surface border border-base rounded-xl overflow-hidden shadow-e1 transition duration-200 ease-standard hover:shadow-e2 hover:-translate-y-0.5 motion-reduce:hover:translate-y-0') }}>
+<article {{ $attributes->class('group relative flex flex-col bg-surface border border-line rounded-xl overflow-hidden shadow-e1 transition duration-200 ease-standard hover:shadow-e2 hover:-translate-y-0.5 motion-reduce:hover:translate-y-0') }}>
     <a href="{{ route('products.show', $product) }}" class="relative block aspect-square bg-surface-2 overflow-hidden grid place-items-center">
         <div class="w-full h-full transition-transform duration-500 ease-standard group-hover:scale-[1.03] motion-reduce:group-hover:scale-100 grid place-items-center">
             <x-listing-thumbnail :cover="$product->coverImage()" :alt="$product->title" type="product" />

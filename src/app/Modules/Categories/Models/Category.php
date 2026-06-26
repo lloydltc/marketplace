@@ -67,6 +67,12 @@ class Category extends Model
         return $this->hasMany(self::class, 'parent_id')->orderBy('sort_order');
     }
 
+    /** PM1/PM4: canonical parts in this category. */
+    public function parts(): HasMany
+    {
+        return $this->hasMany(\App\Modules\Parts\Models\Part::class, 'category_id');
+    }
+
     // ─── Scopes ───────────────────────────────────────────────────────────────
 
     public function scopeRoots(Builder $query): Builder

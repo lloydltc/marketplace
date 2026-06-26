@@ -26,7 +26,7 @@
              {{ $attributes->class("relative w-full $max bg-surface shadow-e4 rounded-t-xl sm:rounded-xl") }}>
 
             @if ($title || isset($actions))
-                <div class="flex items-center justify-between gap-4 px-5 py-4 border-b border-base">
+                <div class="flex items-center justify-between gap-4 px-5 py-4 border-b border-line">
                     <h2 class="text-h3 text-[rgb(var(--text-strong))]">{{ $title }}</h2>
                     <x-icon-button label="Close" @click="open = false">
                         <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M6 18L18 6" /></svg>
@@ -37,7 +37,7 @@
             <div class="px-5 py-4 text-[rgb(var(--text))]">{{ $slot }}</div>
 
             @isset($actions)
-                <div class="flex items-center justify-end gap-3 px-5 py-4 border-t border-base">{{ $actions }}</div>
+                <div class="flex items-center justify-end gap-3 px-5 py-4 border-t border-line">{{ $actions }}</div>
             @endisset
         </div>
     </div>

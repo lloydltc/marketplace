@@ -28,7 +28,7 @@
          role="dialog" aria-modal="true" @if ($title) aria-label="{{ $title }}" @endif
          {{ $attributes->class("absolute $panel bg-surface shadow-e4 flex flex-col") }}>
 
-        <div class="flex items-center justify-between gap-4 px-5 py-4 border-b border-base shrink-0">
+        <div class="flex items-center justify-between gap-4 px-5 py-4 border-b border-line shrink-0">
             <h2 class="text-h3 text-[rgb(var(--text-strong))]">{{ $title }}</h2>
             <x-icon-button label="Close" @click="open = false">
                 <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M6 18L18 6" /></svg>
@@ -38,7 +38,7 @@
         <div class="flex-1 overflow-y-auto px-5 py-4 text-[rgb(var(--text))]">{{ $slot }}</div>
 
         @isset($footer)
-            <div class="shrink-0 px-5 py-4 border-t border-base">{{ $footer }}</div>
+            <div class="shrink-0 px-5 py-4 border-t border-line">{{ $footer }}</div>
         @endisset
     </div>
 </div>

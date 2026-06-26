@@ -15,7 +15,7 @@
             next() { this.i = (this.i + 1) % this.images.length; },
             prev() { this.i = (this.i - 1 + this.images.length) % this.images.length; },
         }">
-        <div class="rounded-xl overflow-hidden border border-base bg-surface-2 aspect-video relative">
+        <div class="rounded-xl overflow-hidden border border-line bg-surface-2 aspect-video relative">
             <img :src="images[i]" alt="{{ $alt }}" decoding="async"
                  @click="lightbox = true" class="w-full h-full object-cover cursor-zoom-in">
             <span class="absolute bottom-2 right-2 bg-[rgb(var(--bg-sidebar)/0.7)] text-white text-caption px-2 py-1 rounded-full tabular-nums backdrop-blur-sm">
@@ -62,7 +62,7 @@
         </div>
     </div>
 @else
-    <div class="bg-surface-2 rounded-xl aspect-video flex items-center justify-center text-[rgb(var(--text-muted))] border border-base">
+    <div class="bg-surface-2 rounded-xl aspect-video flex items-center justify-center text-[rgb(var(--text-muted))] border border-line">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-20 h-20 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="0.75" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8 17H5a2 2 0 01-2-2v-4l2-5h10l2 5v4a2 2 0 01-2 2h-3m-4 0h4m-4 0v-4h4v4" />
         </svg>

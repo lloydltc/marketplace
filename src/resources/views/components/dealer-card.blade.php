@@ -5,7 +5,7 @@
 
 <a href="{{ $dealer->storefrontUrl() }}"
    {{ $attributes->class('group flex flex-col bg-surface border rounded-lg shadow-e1 p-5 transition duration-200 ease-standard hover:shadow-e2 hover:-translate-y-0.5 motion-reduce:hover:translate-y-0 '
-       . ($featured ? 'border-[rgb(var(--brand)/0.5)]' : 'border-base')) }}>
+       . ($featured ? 'border-[rgb(var(--brand)/0.5)]' : 'border-line')) }}>
     <div class="flex items-center gap-3 mb-3">
         <div class="size-12 rounded-md bg-surface-2 grid place-items-center overflow-hidden shrink-0">
             @if ($dealer->logoUrl())

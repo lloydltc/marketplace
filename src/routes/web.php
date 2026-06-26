@@ -78,6 +78,12 @@ Route::get('search/vehicles', [SearchController::class, 'vehicles'])->name('sear
 // H6: live inventory count for the vehicle filter form (JSON)
 Route::get('search/vehicles/count', [SearchController::class, 'vehicleCount'])->name('search.vehicles.count');
 
+// PM4: public parts catalog browse + basic VIN search
+Route::get('parts', [\App\Http\Controllers\PartCatalogController::class, 'index'])->name('parts.index');
+Route::post('parts/vin', [\App\Http\Controllers\PartCatalogController::class, 'vinSearch'])
+    ->middleware('throttle:20,1')->name('parts.vin');
+Route::get('parts/{part:slug}', [\App\Http\Controllers\PartCatalogController::class, 'show'])->name('parts.show');
+
 // PM3: cascading fitment selector — JSON cascade + session select/clear (public)
 Route::get('fitment/models', [\App\Http\Controllers\FitmentController::class, 'models'])->name('fitment.models');
 Route::get('fitment/generations', [\App\Http\Controllers\FitmentController::class, 'generations'])->name('fitment.generations');

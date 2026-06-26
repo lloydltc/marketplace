@@ -36,7 +36,7 @@
     <style>[x-cloak]{display:none!important}</style>
     {{ $head ?? '' }}
 </head>
-<body class="h-full bg-base font-sans antialiased">
+<body class="h-full bg-page font-sans antialiased">
 
 @inject('nav', 'App\Support\Navigation')
 @inject('cart', 'App\Modules\Cart\Services\CartService')

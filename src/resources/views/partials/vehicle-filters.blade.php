@@ -83,7 +83,7 @@
 
     {{-- Dynamic feature facets (D3) — name embedded in options to stay compact --}}
     @if (isset($filterableFeatures) && $filterableFeatures->isNotEmpty())
-        <div class="space-y-5 pt-5 border-t border-base">
+        <div class="space-y-5 pt-5 border-t border-line">
             <p class="text-overline uppercase text-[rgb(var(--text-muted))]">Features</p>
             @foreach ($filterableFeatures as $def)
                 @php $fv = request("features.{$def->id}"); @endphp

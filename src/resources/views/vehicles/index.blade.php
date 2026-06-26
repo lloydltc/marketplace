@@ -34,7 +34,7 @@
             <div class="flex flex-wrap gap-2 mb-6">
                 @foreach ($bodyTypeCounts as $body => $count)
                     <a href="{{ route('vehicles.index', array_merge(request()->except(['page']), ['body_type' => $body])) }}"
-                       class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-caption font-medium transition-colors {{ request('body_type') === $body ? 'bg-[rgb(var(--brand)/0.15)] text-brand border border-[rgb(var(--brand)/0.4)]' : 'bg-surface border border-base text-[rgb(var(--text-muted))] hover:border-strong' }}">
+                       class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-caption font-medium transition-colors {{ request('body_type') === $body ? 'bg-[rgb(var(--brand)/0.15)] text-brand border border-[rgb(var(--brand)/0.4)]' : 'bg-surface border border-line text-[rgb(var(--text-muted))] hover:border-strong' }}">
                         <span class="capitalize">{{ str_replace('_', ' ', $body) }}</span>
                         <span class="text-[rgb(var(--text-muted))] tabular-nums">{{ number_format($count) }}</span>
                     </a>

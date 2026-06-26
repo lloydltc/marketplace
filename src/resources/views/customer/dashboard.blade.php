@@ -60,7 +60,7 @@
             <div class="flex items-center gap-2.5 overflow-x-auto sd-rail pb-1">
                 @foreach ($popularMakes as $make)
                     <a href="{{ route('vehicles.index', ['make_id' => $make->id]) }}"
-                       class="shrink-0 inline-flex items-center gap-1.5 bg-surface border border-base hover:border-brand text-[rgb(var(--text))] hover:text-brand text-body-sm font-medium px-5 py-2 rounded-full transition-colors">
+                       class="shrink-0 inline-flex items-center gap-1.5 bg-surface border border-line hover:border-brand text-[rgb(var(--text))] hover:text-brand text-body-sm font-medium px-5 py-2 rounded-full transition-colors">
                         {{ $make->name }}
                         <span class="text-[rgb(var(--text-muted))] text-caption tabular-nums">{{ number_format($make->total) }}</span>
                     </a>

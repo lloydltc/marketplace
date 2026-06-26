@@ -11,7 +11,7 @@
     $hover = $interactive
         ? 'transition duration-200 ease-standard hover:shadow-e2 hover:-translate-y-0.5 motion-reduce:hover:translate-y-0'
         : '';
-    $classes = "bg-surface border border-base rounded-lg $pad $elev $hover";
+    $classes = "bg-surface border border-line rounded-lg $pad $elev $hover";
 @endphp
 
 <{{ $as }} {{ $attributes->class($classes) }}>

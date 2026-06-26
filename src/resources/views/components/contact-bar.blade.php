@@ -12,7 +12,7 @@
     </button>
 
     <div x-show="revealed" x-cloak class="space-y-2">
-        <p class="text-body-sm font-medium text-strong" x-text="contact.name"></p>
+        <p class="text-body-sm font-medium text-ink" x-text="contact.name"></p>
         <template x-if="contact.phone">
             <div class="space-y-2">
                 <a :href="wa()" @click="reveal('whatsapp_click')" target="_blank" rel="noopener"
@@ -34,7 +34,7 @@
 
     {{-- Mobile sticky bottom bar (shares this Alpine scope via teleport) --}}
     <template x-teleport="body">
-        <div class="lg:hidden fixed inset-x-0 bottom-0 z-sticky bg-surface border-t border-base shadow-e3 px-4 py-3 flex items-center gap-3">
+        <div class="lg:hidden fixed inset-x-0 bottom-0 z-sticky bg-surface border-t border-line shadow-e3 px-4 py-3 flex items-center gap-3">
             @if ($price)<div class="shrink-0"><x-price :value="$price" /></div>@endif
             <button x-show="!revealed" @click="reveal()" :disabled="loading"
                     class="flex-1 inline-flex items-center justify-center bg-brand hover:bg-brand-hover text-on-brand font-semibold px-4 h-11 rounded-lg text-body-sm transition-colors disabled:opacity-60">

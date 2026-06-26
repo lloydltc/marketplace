@@ -11,7 +11,7 @@
              x-transition:enter-start="opacity-0 translate-y-[-8px]" x-transition:enter-end="opacity-100 translate-y-0"
              :role="t.type === 'danger' ? 'alert' : 'status'"
              :aria-live="t.type === 'danger' ? 'assertive' : 'polite'"
-             class="pointer-events-auto w-full sm:w-80 flex items-start gap-3 rounded-lg bg-surface border border-base shadow-e3 px-4 py-3">
+             class="pointer-events-auto w-full sm:w-80 flex items-start gap-3 rounded-lg bg-surface border border-line shadow-e3 px-4 py-3">
             <span class="mt-0.5 size-2 rounded-full shrink-0"
                   :class="{ 'bg-[rgb(var(--success))]': t.type==='success', 'bg-[rgb(var(--info))]': t.type==='info', 'bg-[rgb(var(--warning))]': t.type==='warning', 'bg-[rgb(var(--danger))]': t.type==='danger' }"></span>
             <p class="flex-1 text-body-sm text-[rgb(var(--text))]" x-text="t.message"></p>

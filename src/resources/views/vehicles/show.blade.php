@@ -39,7 +39,7 @@
 
                 <x-card padding="lg">
                     <div class="flex items-start justify-between gap-3 mb-1">
-                        <h1 class="text-h1 text-strong">{{ $vehicle->displayTitle() }}</h1>
+                        <h1 class="text-h1 text-ink">{{ $vehicle->displayTitle() }}</h1>
                         <x-compare-toggle :vehicle="$vehicle" class="shrink-0" />
                     </div>
 
@@ -86,7 +86,7 @@
                         @foreach ($specs as $label => $value)
                             <div>
                                 <dt class="text-overline uppercase text-[rgb(var(--text-muted))] mb-1">{{ $label }}</dt>
-                                <dd class="text-body-sm font-medium text-strong {{ in_array($label, ['Ref code', 'VIN']) ? 'font-mono text-caption' : '' }}">{{ $value }}</dd>
+                                <dd class="text-body-sm font-medium text-ink {{ in_array($label, ['Ref code', 'VIN']) ? 'font-mono text-caption' : '' }}">{{ $value }}</dd>
                             </div>
                         @endforeach
                     </dl>
@@ -94,17 +94,17 @@
                     {{-- Features & specs (D4) --}}
                     @php $featureGroups = $vehicle->groupedFeatures(); @endphp
                     @if (! empty($featureGroups))
-                        <div class="mt-6 pt-6 border-t border-base">
-                            <h2 class="text-h4 text-strong mb-3">Features &amp; specs</h2>
+                        <div class="mt-6 pt-6 border-t border-line">
+                            <h2 class="text-h4 text-ink mb-3">Features &amp; specs</h2>
                             <div class="space-y-4">
                                 @foreach ($featureGroups as $group => $values)
                                     <div>
                                         <h3 class="text-overline uppercase text-[rgb(var(--text-muted))] mb-2">{{ $group }}</h3>
                                         <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-body-sm">
                                             @foreach ($values as $fv)
-                                                <div class="flex items-center justify-between gap-2 border-b border-base py-1.5">
+                                                <div class="flex items-center justify-between gap-2 border-b border-line py-1.5">
                                                     <dt class="text-[rgb(var(--text-muted))]">{{ $fv->definition->name }}</dt>
-                                                    <dd class="font-medium text-right text-strong">
+                                                    <dd class="font-medium text-right text-ink">
                                                         @if ($fv->definition->type === 'boolean')
                                                             @if ((int) $fv->value === 1)
                                                                 <span class="text-[rgb(var(--success))]">✓ Yes</span>
@@ -125,8 +125,8 @@
                     @endif
 
                     @if ($vehicle->description)
-                        <div class="mt-6 pt-6 border-t border-base">
-                            <h2 class="text-h4 text-strong mb-3">Description</h2>
+                        <div class="mt-6 pt-6 border-t border-line">
+                            <h2 class="text-h4 text-ink mb-3">Description</h2>
                             <p class="text-body-sm text-[rgb(var(--text))] whitespace-pre-line leading-relaxed">{{ $vehicle->description }}</p>
                         </div>
                     @endif
@@ -143,7 +143,7 @@
                         @endif
                     </div>
 
-                    <div class="border-t border-base pt-4 space-y-2 text-body-sm">
+                    <div class="border-t border-line pt-4 space-y-2 text-body-sm">
                         @unless ($vehicle->ownerIsVerified())
                             <div class="bg-[rgb(var(--warning)/0.12)] border border-[rgb(var(--warning)/0.3)] rounded-lg px-3 py-2">
                                 <x-badge variant="unverified" />
@@ -159,7 +159,7 @@
                         @if ($vehicle->isListedByVendor())
                             <div class="flex items-center justify-between">
                                 <span class="text-[rgb(var(--text-muted))]">Dealership</span>
-                                <span class="text-strong font-medium">{{ $vehicle->vendor?->name }}</span>
+                                <span class="text-ink font-medium">{{ $vehicle->vendor?->name }}</span>
                             </div>
                         @endif
                         <div class="flex items-center justify-between">
@@ -185,7 +185,7 @@
     {{-- H10: parts that fit this vehicle (cross-sell) --}}
     @if ($compatibleParts->isNotEmpty())
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
-            <h2 class="text-h2 text-strong mb-5">Parts that fit this {{ $vehicle->make?->name }} {{ $vehicle->vehicleModel?->name }}</h2>
+            <h2 class="text-h2 text-ink mb-5">Parts that fit this {{ $vehicle->make?->name }} {{ $vehicle->vehicleModel?->name }}</h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
                 @foreach ($compatibleParts as $product)
                     <x-part-card :product="$product" />

@@ -3,7 +3,7 @@
     $counts = $typeCounts ?? [];
     $allTotal = array_sum($counts);
     $on  = 'bg-[rgb(var(--bg-sidebar))] text-white';
-    $off = 'bg-surface border border-base text-[rgb(var(--text-muted))] hover:border-strong hover:text-[rgb(var(--text))]';
+    $off = 'bg-surface border border-line text-[rgb(var(--text-muted))] hover:border-strong hover:text-[rgb(var(--text))]';
 @endphp
 <div class="flex flex-wrap gap-2 mb-5">
     <a href="{{ route('vehicles.index', request()->except(['vehicle_type', 'page'])) }}"

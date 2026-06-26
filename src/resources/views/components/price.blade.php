@@ -21,7 +21,7 @@
     }
 @endphp
 
-<span {{ $attributes->class("$sizeCls tabular-nums text-strong") }}>
+<span {{ $attributes->class("$sizeCls tabular-nums text-ink") }}>
     @if ($display)
         {{ $display }}
     @else
