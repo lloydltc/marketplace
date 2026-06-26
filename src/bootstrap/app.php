@@ -66,4 +66,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->renderable(function (\App\Modules\Rfq\Exceptions\RfqThresholdException $e) {
             return back()->withErrors(['rfq' => $e->getMessage()]);
         });
+
+        $exceptions->renderable(function (\App\Modules\Products\Exceptions\InsufficientStockException $e) {
+            return back()->withErrors(['stock' => $e->getMessage()]);
+        });
     })->create();

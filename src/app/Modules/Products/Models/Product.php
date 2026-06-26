@@ -25,6 +25,7 @@ class Product extends Model
 
     protected $fillable = [
         'vendor_id',
+        'part_id',
         'category_id',
         'title',
         'description',
@@ -33,6 +34,8 @@ class Product extends Model
         'price_usd',
         'exchange_rate',
         'quantity',
+        'condition',
+        'low_stock_threshold',
         'status',
         'rating',
         'review_count',
@@ -117,6 +120,26 @@ class Product extends Model
     public function reports(): \Illuminate\Database\Eloquent\Relations\MorphMany
     {
         return $this->morphMany(\App\Models\ListingReport::class, 'reportable');
+    }
+
+    /** PM2: the canonical part this offering sells (nullable until linked/backfilled). */
+    public function part(): BelongsTo
+    {
+        return $this->belongsTo(\App\Modules\Parts\Models\Part::class, 'part_id');
+    }
+
+    /** PM2: auditable stock movement trail for this offering. */
+    public function inventoryMovements(): HasMany
+    {
+        return $this->hasMany(InventoryMovement::class)->latest('created_at');
+    }
+
+    /** PM2: at/under the vendor's low-stock threshold (default 5) but still in stock. */
+    public function isLowStock(): bool
+    {
+        $threshold = $this->low_stock_threshold ?? 5;
+
+        return $this->quantity > 0 && $this->quantity <= $threshold;
     }
 
     /** First image by display order. Uses the loaded `images` relation when

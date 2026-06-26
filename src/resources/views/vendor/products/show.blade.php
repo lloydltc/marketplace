@@ -95,5 +95,61 @@
                 </div>
             </div>
         </div>
+
+        {{-- PM2: inventory management (audited stock adjustments) --}}
+        @can('update', $product)
+            <div class="bg-white border border-neutral-200 rounded-xl shadow-sm p-6 mt-6">
+                <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+                    <div>
+                        <h2 class="text-lg font-semibold text-neutral-900">Inventory</h2>
+                        <p class="text-sm text-neutral-500 mt-0.5">
+                            On hand: <strong class="tabular-nums">{{ $product->quantity }}</strong>
+                            @if ($product->isLowStock())
+                                <span class="ml-2 text-xs font-semibold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Low stock</span>
+                            @endif
+                        </p>
+                    </div>
+                    <form method="POST" action="{{ route('vendor.products.inventory.adjust', $product) }}" class="flex items-end gap-2">
+                        @csrf
+                        <div>
+                            <label class="block text-xs text-neutral-500 mb-1">Set stock</label>
+                            <input type="number" name="quantity" min="0" max="1000000" value="{{ $product->quantity }}"
+                                   class="w-28 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
+                        </div>
+                        <input type="text" name="note" placeholder="Note (optional)" maxlength="255"
+                               class="border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
+                        <button type="submit" class="bg-[#1A1A24] hover:bg-[#1A1A24]/90 text-white font-medium px-4 py-2 rounded-lg text-sm">Update</button>
+                    </form>
+                </div>
+
+                @php $movements = $product->inventoryMovements()->with('actor')->limit(10)->get(); @endphp
+                @if ($movements->isNotEmpty())
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-xs text-neutral-400 uppercase tracking-wide">
+                                <th class="py-2 font-medium">When</th>
+                                <th class="py-2 font-medium">Type</th>
+                                <th class="py-2 font-medium text-right">Change</th>
+                                <th class="py-2 font-medium text-right">Balance</th>
+                                <th class="py-2 font-medium">Note</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-neutral-100">
+                            @foreach ($movements as $m)
+                                <tr>
+                                    <td class="py-2 text-neutral-500">{{ $m->created_at->diffForHumans() }}</td>
+                                    <td class="py-2 capitalize">{{ $m->type }}</td>
+                                    <td class="py-2 text-right tabular-nums {{ $m->qty < 0 ? 'text-red-600' : 'text-[#1B8F5A]' }}">{{ $m->qty > 0 ? '+' : '' }}{{ $m->qty }}</td>
+                                    <td class="py-2 text-right tabular-nums font-medium">{{ $m->balance_after }}</td>
+                                    <td class="py-2 text-neutral-500">{{ $m->reference }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <p class="text-sm text-neutral-500">No stock movements yet.</p>
+                @endif
+            </div>
+        @endcan
     </div>
 </x-layouts.app>

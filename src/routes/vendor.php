@@ -73,6 +73,9 @@ Route::middleware('role:vendor_admin')->group(function () {
     Route::post('products/{product}/fitments', [\App\Modules\Products\Controllers\Vendor\ProductFitmentController::class, 'store'])->name('products.fitments.store');
     Route::delete('products/{product}/fitments/{fitment}', [\App\Modules\Products\Controllers\Vendor\ProductFitmentController::class, 'destroy'])->name('products.fitments.destroy');
 
+    // PM2: offering stock adjustment (audited via inventory_movements)
+    Route::post('products/{product}/inventory', [\App\Modules\Products\Controllers\Vendor\ProductInventoryController::class, 'adjust'])->name('products.inventory.adjust');
+
     // Product image management
     Route::post('products/{product}/images', [ProductImageController::class, 'store'])->middleware('throttle:60,1')->name('products.images.store');
     Route::delete('products/{product}/images/{image}', [ProductImageController::class, 'destroy'])->name('products.images.destroy');
