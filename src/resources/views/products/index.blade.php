@@ -1,101 +1,81 @@
 <x-layouts.app>
-    <x-slot:title>Browse Products</x-slot:title>
+    <x-slot:title>Parts &amp; accessories</x-slot:title>
+    <x-slot:metaDescription>Spare parts, accessories, and tools from verified vendors on SalmaDrive.</x-slot:metaDescription>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-        <div class="mb-6">
-            <h1 class="text-2xl font-semibold text-neutral-900">Browse Products</h1>
-            <p class="text-sm text-neutral-500 mt-1">Find spare parts, accessories, tools, and more.</p>
-        </div>
+        <header class="mb-6">
+            <h1 class="text-h1 text-ink">Parts &amp; accessories</h1>
+            <p class="text-body-sm text-muted mt-1">Find spare parts, accessories, tools, and more.</p>
+        </header>
 
-        {{-- Search & Filters --}}
-        <form method="GET" class="flex flex-wrap gap-3 mb-3">
-            <x-search-autocomplete name="q" :endpoint="route('search.products')"
-                                   :value="request('q')" placeholder="Search products…" />
+        {{-- Category quick-rail --}}
+        @if ($categories->isNotEmpty())
+            <div class="flex items-center gap-2.5 overflow-x-auto sd-rail pb-1 mb-5">
+                <a href="{{ route('products.index') }}"
+                   class="shrink-0 inline-flex items-center px-4 py-2 rounded-full text-body-sm font-medium transition-colors {{ ! request('category') ? 'bg-sidebar text-white' : 'bg-surface border border-line text-muted hover:border-strong' }}">All parts</a>
+                @foreach ($categories as $root)
+                    <a href="{{ route('products.index', ['category' => $root->id]) }}"
+                       class="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-body-sm font-medium transition-colors bg-surface border border-line text-[rgb(var(--text))] hover:border-brand hover:text-brand">
+                        @if ($root->icon)<span aria-hidden="true">{{ $root->icon }}</span>@endif {{ $root->name }}
+                    </a>
+                @endforeach
+            </div>
+        @endif
 
-            <select name="category"
-                    class="border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
+        {{-- Filter bar --}}
+        <form method="GET" class="flex flex-wrap items-end gap-3 mb-3">
+            <div class="flex-1 min-w-[12rem]">
+                <x-search-autocomplete name="q" :endpoint="route('search.products')"
+                                       :value="request('q')" placeholder="Search parts…" />
+            </div>
+
+            <x-select name="category" class="!w-auto min-w-[11rem]">
                 <option value="">All categories</option>
                 @foreach ($categories as $root)
                     <optgroup label="{{ $root->icon }} {{ $root->name }}">
                         @foreach ($root->children as $child)
-                            <option value="{{ $child->id }}" @selected(request('category') === $child->id)>
-                                {{ $child->name }}
-                            </option>
+                            <option value="{{ $child->id }}" @selected(request('category') === $child->id)>{{ $child->name }}</option>
                         @endforeach
                     </optgroup>
                 @endforeach
-            </select>
+            </x-select>
 
-            <select name="fulfilment"
-                    class="border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
+            <x-select name="fulfilment" class="!w-auto min-w-[11rem]">
                 <option value="">Any fulfilment</option>
-                <option value="fbs"    @selected(request('fulfilment') === 'fbs')>Fulfilled by Salma</option>
+                <option value="fbs" @selected(request('fulfilment') === 'fbs')>Fulfilled by Salma</option>
                 <option value="vendor" @selected(request('fulfilment') === 'vendor')>Vendor-fulfilled</option>
-            </select>
+            </x-select>
 
-            <select name="sort"
-                    class="border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
-                <option value="latest"     @selected(request('sort', 'latest') === 'latest')>Latest</option>
-                <option value="price_asc"  @selected(request('sort') === 'price_asc')>Price: Low to High</option>
-                <option value="price_desc" @selected(request('sort') === 'price_desc')>Price: High to Low</option>
-                <option value="rating"     @selected(request('sort') === 'rating')>Top Rated</option>
-            </select>
+            <x-select name="sort" class="!w-auto min-w-[10rem]">
+                <option value="latest" @selected(request('sort', 'latest') === 'latest')>Latest</option>
+                <option value="price_asc" @selected(request('sort') === 'price_asc')>Price: low to high</option>
+                <option value="price_desc" @selected(request('sort') === 'price_desc')>Price: high to low</option>
+                <option value="rating" @selected(request('sort') === 'rating')>Top rated</option>
+            </x-select>
 
-            <button type="submit"
-                    class="bg-[#F0A820] hover:bg-[#F0A820]/90 text-[#1A1A24] font-semibold px-5 py-2 rounded-lg text-sm transition-colors">
-                Search
-            </button>
+            <x-button type="submit">Search</x-button>
         </form>
 
-        {{-- Save current search (signed-in users, active filters only) --}}
         <div class="mb-8 min-h-[2rem]">
             <x-save-search type="products" :active="request()->hasAny(['q', 'category', 'fulfilment', 'min_price', 'max_price'])" />
         </div>
 
         @if ($products->isEmpty())
-            <div class="py-16 space-y-6">
-                <p class="text-neutral-500 text-sm text-center">No products found. Try a different search or category.</p>
+            <div class="py-10 space-y-6">
+                <x-empty title="No parts found" message="Try a different search or category — or let vendors quote you." />
                 <x-rfq-cta context="products" :query="request('q', '')" />
                 <div class="text-center">
-                    <a href="{{ route('products.index') }}" class="text-sm text-[#3DB8E8] hover:underline">Clear filters</a>
+                    <a href="{{ route('products.index') }}" class="text-body-sm text-[rgb(var(--info))] hover:underline">Clear filters</a>
                 </div>
             </div>
         @else
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
                 @foreach ($products as $product)
-                    <a href="{{ route('products.show', $product) }}"
-                       class="bg-white border border-neutral-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
-                        <div class="bg-neutral-100 h-40 flex items-center justify-center overflow-hidden">
-                            <x-listing-thumbnail :cover="$product->coverImage()" :alt="$product->title" type="product" />
-                        </div>
-                        <div class="p-4">
-                            <div class="text-xs text-neutral-400 mb-1">{{ $product->category?->name }}</div>
-                            <h3 class="text-sm font-semibold text-neutral-900 line-clamp-2 group-hover:text-[#F0A820] transition-colors">
-                                {{ $product->title }}
-                            </h3>
-                            <div class="mt-3 flex items-center justify-between">
-                                <span class="text-sm font-bold text-neutral-900 tabular-nums">
-                                    {{ $product->primaryPrice() }}
-                                </span>
-                                <span class="text-xs text-neutral-400 tabular-nums">
-                                    {{ $product->convertedZwl() }}
-                                </span>
-                            </div>
-                            <div class="mt-2 text-xs text-neutral-400">
-                                {{ $product->vendor?->name }} · {{ $product->quantity }} in stock
-                            </div>
-                            <div class="mt-1">
-                                <x-unverified-badge :verified="$product->vendor?->isApproved() ?? true" />
-                            </div>
-                        </div>
-                    </a>
+                    <x-part-card :product="$product" />
                 @endforeach
             </div>
-
-            <div class="mt-8">
-                {{ $products->withQueryString()->links() }}
-            </div>
+            <x-pagination :paginator="$products->withQueryString()" class="mt-8" />
         @endif
     </div>
 </x-layouts.app>

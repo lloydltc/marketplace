@@ -1,30 +1,29 @@
 <x-layouts.app>
-    <x-slot:title>Compare Vehicles</x-slot:title>
+    <x-slot:title>Compare vehicles</x-slot:title>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center justify-between gap-4 mb-6">
             <div>
-                <h1 class="text-2xl font-semibold text-neutral-900">Compare vehicles</h1>
-                <p class="text-sm text-neutral-500 mt-1">Up to {{ config('engagement.compare.max_items') }} side by side.</p>
+                <h1 class="text-h1 text-ink">Compare vehicles</h1>
+                <p class="text-body-sm text-muted mt-1">Up to {{ config('engagement.compare.max_items') }} side by side — differences are highlighted.</p>
             </div>
             @if ($vehicles->isNotEmpty())
                 <form method="POST" action="{{ route('compare.clear') }}">
                     @csrf @method('DELETE')
-                    <button type="submit" class="text-sm text-neutral-500 hover:text-neutral-700">Clear all</button>
+                    <button type="submit" class="text-body-sm text-muted hover:text-[rgb(var(--text))] transition-colors">Clear all</button>
                 </form>
             @endif
         </div>
 
         @if ($vehicles->isEmpty())
-            <div class="bg-white border border-neutral-200 rounded-xl py-16 text-center">
-                <p class="text-neutral-500">No vehicles to compare yet.</p>
-                <a href="{{ route('vehicles.index') }}" class="inline-block mt-4 text-sm font-medium text-[#3DB8E8] hover:underline">Browse vehicles →</a>
-            </div>
+            <x-empty title="No vehicles to compare yet" message="Add vehicles from any listing to line them up side by side.">
+                <x-button :href="route('vehicles.index')">Browse vehicles</x-button>
+            </x-empty>
         @else
             @php
                 $rows = [
                     ['Price', fn ($v) => $v->primaryPrice()],
-                    ['Year', fn ($v) => $v->year],
+                    ['Year', fn ($v) => (string) $v->year],
                     ['Mileage', fn ($v) => number_format($v->mileage) . ' km'],
                     ['Body type', fn ($v) => ucfirst((string) $v->body_type)],
                     ['Transmission', fn ($v) => ucfirst((string) $v->transmission)],
@@ -35,33 +34,37 @@
                 ];
             @endphp
 
-            <div class="overflow-x-auto bg-white border border-neutral-200 rounded-xl shadow-sm">
-                <table class="w-full text-sm">
+            <div class="overflow-x-auto bg-surface border border-line rounded-xl shadow-e1">
+                <table class="w-full text-body-sm border-collapse">
                     <thead>
-                        <tr class="border-b border-neutral-100">
-                            <th class="px-5 py-4 text-left text-xs font-medium text-neutral-400 uppercase tracking-wide w-40">Listing</th>
+                        <tr class="border-b border-line">
+                            <th class="sticky left-0 z-10 bg-surface px-5 py-4 text-left text-overline uppercase text-muted w-36">Listing</th>
                             @foreach ($vehicles as $v)
                                 <th class="px-5 py-4 text-left align-top min-w-[200px]">
-                                    <a href="{{ route('vehicles.show', $v) }}" class="block">
-                                        <div class="aspect-video bg-neutral-100 rounded-lg overflow-hidden mb-2 flex items-center justify-center">
+                                    <a href="{{ route('vehicles.show', $v) }}" class="block group">
+                                        <div class="aspect-video bg-surface-2 rounded-lg overflow-hidden mb-2 grid place-items-center">
                                             <x-listing-thumbnail :cover="$v->coverImage()" :alt="$v->displayTitle()" type="vehicle" />
                                         </div>
-                                        <span class="font-semibold text-neutral-900 hover:text-[#F0A820]">{{ $v->displayTitle() }}</span>
+                                        <span class="font-semibold text-ink group-hover:text-brand transition-colors">{{ $v->displayTitle() }}</span>
                                     </a>
                                     <form method="POST" action="{{ route('compare.remove', $v) }}" class="mt-2">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="text-xs text-neutral-400 hover:text-red-500">Remove</button>
+                                        <button type="submit" class="text-caption text-muted hover:text-[rgb(var(--danger))] transition-colors">Remove</button>
                                     </form>
                                 </th>
                             @endforeach
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-neutral-100">
+                    <tbody>
                         @foreach ($rows as [$label, $resolver])
-                            <tr>
-                                <td class="px-5 py-3 text-xs font-medium text-neutral-500 uppercase tracking-wide">{{ $label }}</td>
-                                @foreach ($vehicles as $v)
-                                    <td class="px-5 py-3 text-neutral-900 tabular-nums">{{ $resolver($v) }}</td>
+                            @php
+                                $values = $vehicles->map($resolver)->all();
+                                $differs = count(array_unique($values)) > 1;
+                            @endphp
+                            <tr class="border-t border-line">
+                                <td class="sticky left-0 z-10 bg-surface px-5 py-3 text-overline uppercase text-muted">{{ $label }}</td>
+                                @foreach ($values as $value)
+                                    <td class="px-5 py-3 tabular-nums {{ $differs ? 'bg-[rgb(var(--brand)/0.08)] font-medium text-ink' : 'text-[rgb(var(--text))]' }}">{{ $value }}</td>
                                 @endforeach
                             </tr>
                         @endforeach

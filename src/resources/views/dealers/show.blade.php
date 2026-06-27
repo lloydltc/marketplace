@@ -2,94 +2,117 @@
     <x-slot:title>{{ $vendor->name }}</x-slot:title>
     <x-slot:metaDescription>{{ $vendor->name }} on SalmaDrive — {{ $vendor->description ? Str::limit($vendor->description, 140) : 'verified dealer inventory.' }}</x-slot:metaDescription>
 
-    {{-- Storefront header --}}
-    <div class="bg-[#1A1A24]">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-            <a href="{{ route('dealers.index') }}" class="text-sm text-neutral-400 hover:text-white">← All dealers</a>
-            <div class="flex flex-col sm:flex-row sm:items-center gap-5 mt-4">
-                <div class="w-20 h-20 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden shrink-0">
+    {{-- Storefront header: banner + logo + name + verified tier + location + stats --}}
+    <section class="relative overflow-hidden bg-sidebar">
+        <img src="{{ asset('banner/banner2.png') }}" alt="" class="absolute inset-0 w-full h-full object-cover opacity-20" aria-hidden="true">
+        <div class="absolute inset-0 bg-gradient-to-t from-[rgb(var(--bg-sidebar))] via-[rgb(var(--bg-sidebar)/0.85)] to-[rgb(var(--bg-sidebar)/0.6)]"></div>
+
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <a href="{{ route('dealers.index') }}" class="text-body-sm text-neutral-400 hover:text-white transition-colors">← All dealers</a>
+
+            <div class="flex flex-col sm:flex-row sm:items-end gap-5 mt-4">
+                <div class="size-20 rounded-xl bg-white/10 ring-1 ring-white/15 grid place-items-center overflow-hidden shrink-0">
                     @if ($vendor->logoUrl())
                         <img src="{{ $vendor->logoUrl() }}" alt="{{ $vendor->name }}" class="w-full h-full object-cover">
                     @else
-                        <span class="text-2xl font-bold text-white/60">{{ Str::upper(Str::substr($vendor->name, 0, 1)) }}</span>
+                        <span class="text-h1 font-bold text-white/60">{{ Str::upper(Str::substr($vendor->name, 0, 1)) }}</span>
                     @endif
                 </div>
-                <div class="min-w-0">
+
+                <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-2 flex-wrap">
-                        <h1 class="text-2xl font-bold text-white">{{ $vendor->name }}</h1>
-                        <span class="text-xs font-medium bg-[#2EBD7A]/20 text-[#2EBD7A] px-2 py-0.5 rounded-full">✓ Verified dealer</span>
+                        <h1 class="text-h1 font-bold text-white">{{ $vendor->name }}</h1>
+                        <span class="inline-flex items-center gap-1 text-caption font-semibold bg-[rgb(var(--success)/0.2)] text-[rgb(var(--success))] px-2 py-0.5 rounded-full">✓ Verified dealer</span>
                         @if ($vendor->isFeaturedDealer())
-                            <span class="text-xs font-semibold bg-[#F0A820]/20 text-[#F0A820] px-2 py-0.5 rounded-full">★ Featured</span>
+                            <span class="inline-flex items-center gap-1 text-caption font-semibold bg-[rgb(var(--brand)/0.2)] text-brand px-2 py-0.5 rounded-full">★ Featured</span>
                         @endif
                     </div>
-                    @if ($vendor->description)
-                        <p class="text-sm text-neutral-400 mt-2 max-w-2xl">{{ $vendor->description }}</p>
+
+                    @if ($vendor->address)
+                        <p class="mt-2 text-body-sm text-neutral-400 inline-flex items-center gap-1">
+                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-6-5.3-6-10a6 6 0 1112 0c0 4.7-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></svg>
+                            {{ $vendor->address }}
+                        </p>
                     @endif
-                    <div class="flex flex-wrap gap-x-5 gap-y-1 mt-3 text-sm text-neutral-400">
-                        @if ($vendor->phone)
-                            <a href="tel:{{ $vendor->phone }}" class="hover:text-white">📞 {{ $vendor->phone }}</a>
-                        @endif
-                        @if ($vendor->address)
-                            <span>📍 {{ $vendor->address }}</span>
-                        @endif
+
+                    <div class="mt-4 flex items-center gap-6">
+                        <div><span class="text-h3 font-bold text-white tabular-nums">{{ number_format($vehicles->total()) }}</span> <span class="text-caption text-neutral-400">vehicles</span></div>
+                        <div class="w-px h-8 bg-white/15"></div>
+                        <div><span class="text-h3 font-bold text-white tabular-nums">{{ number_format($products->total()) }}</span> <span class="text-caption text-neutral-400">parts</span></div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <x-tabs :tabs="['listings' => 'Listings', 'about' => 'About', 'contact' => 'Contact']" default="listings">
 
-        {{-- Vehicles --}}
-        <section>
-            <h2 class="text-xl font-semibold text-neutral-900 mb-5">Vehicles ({{ $vehicles->total() }})</h2>
-            @if ($vehicles->isEmpty())
-                <p class="text-sm text-neutral-500">No vehicles listed right now.</p>
-            @else
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                    @foreach ($vehicles as $vehicle)
-                        <a href="{{ route('vehicles.show', $vehicle) }}"
-                           class="group bg-white border border-neutral-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
-                            <div class="aspect-video bg-neutral-100 flex items-center justify-center overflow-hidden">
-                                <x-listing-thumbnail :cover="$vehicle->coverImage()" :alt="$vehicle->displayTitle()" type="vehicle" />
-                            </div>
-                            <div class="p-4 flex flex-col flex-1">
-                                @if ($vehicle->isFeatured())
-                                    <span class="self-start mb-2 text-xs font-semibold bg-[#F0A820]/15 text-[#B5790F] px-2 py-0.5 rounded-full">★ Featured</span>
-                                @endif
-                                <h3 class="text-sm font-semibold text-neutral-900 group-hover:text-[#F0A820] transition-colors leading-snug mb-2">{{ $vehicle->displayTitle() }}</h3>
-                                <div class="mt-auto text-base font-bold text-neutral-900 tabular-nums">{{ $vehicle->primaryPrice() }}</div>
-                            </div>
+            {{-- Listings --}}
+            <div x-show="tab === 'listings'" class="space-y-12">
+                <section>
+                    <h2 class="text-h2 text-ink mb-5">Vehicles ({{ number_format($vehicles->total()) }})</h2>
+                    @if ($vehicles->isEmpty())
+                        <x-empty title="No vehicles listed right now" message="Check back soon — this dealer updates inventory regularly." />
+                    @else
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            @foreach ($vehicles as $vehicle)
+                                <x-vehicle-card :vehicle="$vehicle" :compare="false" />
+                            @endforeach
+                        </div>
+                        <x-pagination :paginator="$vehicles->withQueryString()" class="mt-6" />
+                    @endif
+                </section>
+
+                <section>
+                    <h2 class="text-h2 text-ink mb-5">Parts &amp; accessories ({{ number_format($products->total()) }})</h2>
+                    @if ($products->isEmpty())
+                        <x-empty title="No parts listed right now" message="This dealer hasn't stocked parts yet." />
+                    @else
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                            @foreach ($products as $product)
+                                <x-part-card :product="$product" />
+                            @endforeach
+                        </div>
+                        <x-pagination :paginator="$products->withQueryString()" class="mt-6" />
+                    @endif
+                </section>
+            </div>
+
+            {{-- About --}}
+            <div x-show="tab === 'about'" x-cloak>
+                <x-card padding="lg" class="max-w-3xl">
+                    <h2 class="text-h3 text-ink mb-3">About {{ $vendor->name }}</h2>
+                    @if ($vendor->description)
+                        <p class="text-body text-[rgb(var(--text))] whitespace-pre-line leading-relaxed">{{ $vendor->description }}</p>
+                    @else
+                        <p class="text-body-sm text-muted">This dealer hasn't added a description yet.</p>
+                    @endif
+                </x-card>
+            </div>
+
+            {{-- Contact --}}
+            <div x-show="tab === 'contact'" x-cloak>
+                <x-card padding="lg" class="max-w-md space-y-3">
+                    <h2 class="text-h3 text-ink mb-1">Get in touch</h2>
+                    @if ($vendor->phone)
+                        <a href="tel:{{ $vendor->phone }}" class="flex items-center gap-2 text-body-sm text-[rgb(var(--text))] hover:text-brand transition-colors">
+                            <svg class="size-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h2.3a1 1 0 01.95.68l1 3a1 1 0 01-.5 1.2L7.2 9.1a12 12 0 005.7 5.7l1.2-1.55a1 1 0 011.2-.5l3 1a1 1 0 01.68.95V17a2 2 0 01-2 2A14 14 0 013 5z"/></svg>
+                            {{ $vendor->phone }}
                         </a>
-                    @endforeach
-                </div>
-                <div class="mt-6">{{ $vehicles->links() }}</div>
-            @endif
-        </section>
+                    @endif
+                    @if ($vendor->address)
+                        <p class="flex items-start gap-2 text-body-sm text-[rgb(var(--text))]">
+                            <svg class="size-4 text-muted mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-6-5.3-6-10a6 6 0 1112 0c0 4.7-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></svg>
+                            {{ $vendor->address }}
+                        </p>
+                    @endif
+                    @if (! $vendor->phone && ! $vendor->address)
+                        <p class="text-body-sm text-muted">Contact details aren't published. Enquire on any listing to reach this dealer.</p>
+                    @endif
+                </x-card>
+            </div>
 
-        {{-- Parts & accessories --}}
-        <section>
-            <h2 class="text-xl font-semibold text-neutral-900 mb-5">Parts & accessories ({{ $products->total() }})</h2>
-            @if ($products->isEmpty())
-                <p class="text-sm text-neutral-500">No parts listed right now.</p>
-            @else
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                    @foreach ($products as $product)
-                        <a href="{{ route('products.show', $product) }}"
-                           class="bg-white border border-neutral-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
-                            <div class="bg-neutral-100 h-40 flex items-center justify-center overflow-hidden">
-                                <x-listing-thumbnail :cover="$product->coverImage()" :alt="$product->title" type="product" />
-                            </div>
-                            <div class="p-4">
-                                <div class="text-xs text-neutral-400 mb-1">{{ $product->category?->name }}</div>
-                                <h3 class="text-sm font-semibold text-neutral-900 line-clamp-2 group-hover:text-[#F0A820] transition-colors">{{ $product->title }}</h3>
-                                <div class="mt-3 text-sm font-bold text-neutral-900 tabular-nums">{{ $product->primaryPrice() }}</div>
-                            </div>
-                        </a>
-                    @endforeach
-                </div>
-                <div class="mt-6">{{ $products->links() }}</div>
-            @endif
-        </section>
+        </x-tabs>
     </div>
 </x-layouts.app>

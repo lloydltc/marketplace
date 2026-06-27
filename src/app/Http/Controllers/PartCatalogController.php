@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Modules\Categories\Models\Category;
 use App\Modules\Parts\Models\Part;
+use App\Modules\Parts\Services\CoPurchaseService;
 use App\Modules\Parts\Services\FitmentContext;
 use App\Modules\Parts\Services\VinDecoder;
 use App\Modules\Vehicles\Models\VehicleMake;
@@ -81,11 +82,15 @@ class PartCatalogController extends Controller
      * Part detail. Basic in PM4 (so the catalog links resolve); the full offers
      * compare / alternatives / frequently-bought-together is built in PM5.
      */
-    public function show(Part $part): View
+    public function show(Part $part, CoPurchaseService $coPurchase): View
     {
         abort_unless($part->isActive(), 404);
 
-        $part->load(['category', 'media', 'oemNumbers', 'guides', 'fitments.make', 'fitments.vehicleModel']);
+        $part->load([
+            'category', 'media', 'oemNumbers', 'guides',
+            'fitments.make', 'fitments.vehicleModel',
+            'alternatives.alternative.media',
+        ]);
 
         $offers = $part->offerings()
             ->where('status', 'active')
@@ -95,14 +100,24 @@ class PartCatalogController extends Controller
 
         $fitsSelection = $this->context->has() ? $part->fitsSelection($this->context->selection()) : null;
 
+        // PM5: alternatives (curated + OEM-derived, de-duplicated) and FBT.
+        $curated = $part->alternatives->map->alternative->filter(fn ($p) => $p && $p->isActive());
+        $alternatives = $curated
+            ->concat($part->relatedByOem())
+            ->unique('id')
+            ->reject(fn ($p) => $p->id === $part->id)
+            ->take(8)
+            ->values();
+
+        $frequentlyBought = $coPurchase->frequentlyBoughtWith($part, (int) config('parts.fbt_count', 4));
+
         return view('parts.show', [
-            'part'          => $part,
-            'offers'        => $offers,
-            'context'       => $this->context,
-            'fitsSelection' => $fitsSelection,
-            'alternatives'  => collect(),
-            'relatedByOem'  => collect(),
-            'frequentlyBought' => collect(),
+            'part'             => $part,
+            'offers'           => $offers,
+            'context'          => $this->context,
+            'fitsSelection'    => $fitsSelection,
+            'alternatives'     => $alternatives,
+            'frequentlyBought' => $frequentlyBought,
         ]);
     }
 

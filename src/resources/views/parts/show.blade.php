@@ -42,6 +42,25 @@
                     @if ($part->description)
                         <div class="prose prose-sm max-w-none text-[rgb(var(--text))] mt-5">{!! nl2br(e($part->description)) !!}</div>
                     @endif
+
+                    @if ($part->warranty_months)
+                        <div class="mt-5 flex items-center gap-2 text-body-sm">
+                            <span class="text-[rgb(var(--success))]">🛡</span>
+                            <span class="text-ink font-medium">{{ $part->warranty_months }}-month warranty</span>
+                            @if ($part->warranty_terms)<span class="text-[rgb(var(--text-muted))]">· {{ $part->warranty_terms }}</span>@endif
+                        </div>
+                    @endif
+
+                    @if ($part->guides->isNotEmpty())
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            @foreach ($part->guides as $guide)
+                                <a href="{{ $guide->url }}" target="_blank" rel="noopener"
+                                   class="inline-flex items-center gap-1 text-caption font-medium text-[rgb(var(--info))] hover:underline">
+                                    {{ $guide->type === 'video' ? '▶' : '📄' }} {{ $guide->title }}
+                                </a>
+                            @endforeach
+                        </div>
+                    @endif
                 </x-card>
 
                 {{-- Fits these vehicles --}}
@@ -72,7 +91,22 @@
                     </x-card>
                 @endif
 
-                {{-- PM5: alternatives + frequently-bought-together added here --}}
+                {{-- PM5: alternatives (curated + OEM-derived) --}}
+                @if ($alternatives->isNotEmpty())
+                    <x-card padding="lg">
+                        <h2 class="text-h4 text-ink mb-3">Alternatives &amp; substitutes</h2>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            @foreach ($alternatives as $alt)
+                                <a href="{{ route('parts.show', $alt->slug) }}" class="group flex items-center gap-2 border border-line rounded-lg p-2 hover:shadow-e1 transition-shadow">
+                                    <div class="size-10 rounded bg-surface-2 grid place-items-center overflow-hidden shrink-0">
+                                        @if ($alt->primaryImage())<img src="{{ $alt->primaryImage()->url() }}" alt="{{ $alt->name }}" class="w-full h-full object-cover">@else<span class="text-[rgb(var(--text-muted))]">🔧</span>@endif
+                                    </div>
+                                    <span class="text-caption font-medium text-ink line-clamp-2 group-hover:text-brand">{{ $alt->name }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </x-card>
+                @endif
             </div>
 
             {{-- Right: seller offers (compare) --}}
@@ -117,5 +151,26 @@
                 </x-card>
             </div>
         </div>
+
+        {{-- PM5: frequently bought together (deterministic co-purchase counts, no AI) --}}
+        @if ($frequentlyBought->isNotEmpty())
+            <section class="mt-12">
+                <h2 class="text-h3 text-ink mb-5">Frequently bought together</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                    @foreach ($frequentlyBought as $fbt)
+                        <a href="{{ route('parts.show', $fbt->slug) }}"
+                           class="group bg-surface border border-line rounded-xl shadow-e1 hover:shadow-e2 transition-shadow overflow-hidden flex flex-col">
+                            <div class="aspect-square bg-surface-2 flex items-center justify-center overflow-hidden">
+                                @if ($fbt->primaryImage())<img src="{{ $fbt->primaryImage()->url() }}" alt="{{ $fbt->name }}" class="w-full h-full object-cover">@else<span class="text-4xl text-[rgb(var(--text-muted))]">🔧</span>@endif
+                            </div>
+                            <div class="p-4">
+                                <div class="text-caption text-[rgb(var(--text-muted))] mb-1">{{ $fbt->brand ?? $fbt->category?->name }}</div>
+                                <h3 class="text-body-sm font-semibold text-ink line-clamp-2 group-hover:text-brand transition-colors">{{ $fbt->name }}</h3>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </section>
+        @endif
     </div>
 </x-layouts.app>

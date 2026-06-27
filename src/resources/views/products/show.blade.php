@@ -22,114 +22,100 @@
 
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-        <nav class="flex items-center gap-2 text-sm mb-6 text-neutral-500">
-            <a href="{{ route('products.index') }}" class="hover:text-neutral-700">Products</a>
-            <span>›</span>
-            <span class="text-neutral-400">{{ $product->category?->name }}</span>
-            <span>›</span>
-            <span class="text-neutral-700 truncate">{{ $product->title }}</span>
-        </nav>
+        <x-breadcrumbs class="mb-6" :items="[
+            ['label' => 'Parts', 'url' => route('products.index')],
+            ['label' => $product->category?->name, 'url' => route('products.index', ['category' => $product->category_id])],
+            ['label' => $product->title],
+        ]" />
 
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
 
-            {{-- Product image placeholder --}}
+            {{-- Product image --}}
             <div class="lg:col-span-2">
-                <div class="bg-neutral-100 rounded-xl aspect-square flex items-center justify-center text-6xl text-neutral-300">
-                    🔧
+                <div class="bg-surface-2 border border-line rounded-xl aspect-square grid place-items-center overflow-hidden">
+                    <x-listing-thumbnail :cover="$product->coverImage()" :alt="$product->title" type="product" />
                 </div>
             </div>
 
             {{-- Product details --}}
             <div class="lg:col-span-3">
-                <div class="text-xs text-neutral-400 mb-2 uppercase tracking-wide">
-                    {{ $product->category?->name }}
-                </div>
-
-                <h1 class="text-2xl font-semibold text-neutral-900 mb-4">{{ $product->title }}</h1>
+                <p class="text-overline uppercase text-muted mb-2">{{ $product->category?->name }}</p>
+                <h1 class="text-h1 text-ink mb-4">{{ $product->title }}</h1>
 
                 <div class="mb-6">
-                    <div class="flex items-baseline gap-4">
-                        <span class="text-3xl font-bold text-neutral-900 tabular-nums">
-                            {{ $product->primaryPrice() }}
-                        </span>
-                        <span class="text-lg text-neutral-500 tabular-nums">
-                            ≈ {{ $product->convertedZwl() }}
-                        </span>
+                    <div class="flex items-baseline gap-3 flex-wrap">
+                        <x-price :value="$product->primaryPrice()" size="xl" />
+                        <span class="text-body text-muted tabular-nums">≈ {{ $product->convertedZwl() }}</span>
                     </div>
                     @if ($product->rateLabel())
-                        <p class="text-xs text-neutral-400 mt-1">{{ $product->rateLabel() }}</p>
+                        <p class="text-caption text-muted mt-1">{{ $product->rateLabel() }}</p>
                     @endif
                 </div>
 
                 @inject('nav', 'App\Support\Navigation')
                 @if ($product->isInStock())
-                    <div class="text-sm text-[#2EBD7A] font-medium mb-4">
-                        ✓ {{ $product->quantity }} in stock
-                    </div>
+                    <p class="inline-flex items-center gap-1.5 text-body-sm font-medium text-[rgb(var(--success))] mb-4">
+                        <span class="size-1.5 rounded-full bg-[rgb(var(--success))]"></span> {{ $product->quantity }} in stock
+                    </p>
 
                     @if (session('status'))
-                        <div class="mb-4 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-2">
+                        <div class="mb-4 bg-[rgb(var(--success)/0.12)] border border-[rgb(var(--success)/0.3)] text-[rgb(var(--success))] text-body-sm rounded-lg px-4 py-2" role="status">
                             {{ session('status') }}
                         </div>
                     @endif
 
-                    {{-- Buy CTA only for shoppers (customers + guests). A seller is not
-                         a customer, so sellers/admins see no buyer surface (P1/G2). --}}
+                    {{-- Buy CTA only for shoppers (customers + guests). --}}
                     @if ($nav->canShop(auth()->user()))
                         <form method="POST" action="{{ route('cart.add') }}" class="flex items-center gap-3 mb-6">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
                             <input type="number" name="quantity" value="1" min="1" max="{{ min(99, $product->quantity) }}"
-                                   class="w-20 border border-neutral-300 rounded-lg px-3 py-2.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#F0A820]/40">
-                            <button type="submit"
-                                    class="flex-1 bg-[#F0A820] hover:bg-[#F0A820]/90 text-[#1A1A24] font-semibold py-2.5 rounded-lg text-sm transition-colors">
-                                Add to cart
-                            </button>
+                                   class="w-20 h-11 text-center rounded-md bg-surface text-ink border border-strong focus-visible:outline-none focus:ring-2 focus:ring-brand focus:border-brand text-body-sm">
+                            <x-button type="submit" size="lg" class="flex-1">Add to cart</x-button>
                         </form>
                     @else
-                        <div class="mb-6 text-sm text-neutral-500 bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3">
+                        <div class="mb-6 text-body-sm text-muted bg-surface-2 border border-line rounded-lg px-4 py-3">
                             Purchasing is available to customer accounts.
-                            <a href="{{ route('login') }}" class="text-[#3DB8E8] hover:underline">Sign in as a customer</a> to buy.
+                            <a href="{{ route('login') }}" class="text-[rgb(var(--info))] hover:underline">Sign in as a customer</a> to buy.
                         </div>
                     @endif
                 @else
-                    <div class="text-sm text-red-500 font-medium mb-6">Out of stock</div>
+                    <div class="text-body-sm text-[rgb(var(--danger))] font-medium mb-6">Out of stock</div>
                 @endif
 
                 @if ($product->sku)
-                    <div class="text-xs text-neutral-400 font-mono mb-6">SKU: {{ $product->sku }}</div>
+                    <div class="text-caption text-muted font-mono mb-6">SKU: {{ $product->sku }}</div>
                 @endif
 
-                <div class="bg-neutral-50 border border-neutral-200 rounded-xl p-4 mb-6">
-                    <div class="text-xs text-neutral-500 uppercase tracking-wide mb-2">Sold by</div>
+                <x-card padding="sm" elevation="e0" class="bg-surface-2 mb-6">
+                    <div class="text-overline uppercase text-muted mb-2">Sold by</div>
                     <div class="flex items-center gap-2">
-                        <span class="font-medium text-neutral-800">{{ $product->vendor?->name }}</span>
+                        <span class="font-medium text-ink">{{ $product->vendor?->name }}</span>
                         <x-unverified-badge :verified="$product->vendor?->isApproved() ?? true" />
                     </div>
                     @unless ($product->vendor?->isApproved() ?? true)
-                        <p class="text-xs text-neutral-500 mt-1">This seller is being verified — purchasing opens once approved.</p>
+                        <p class="text-caption text-muted mt-1">This seller is being verified — purchasing opens once approved.</p>
                     @endunless
-                </div>
+                </x-card>
 
-                <div class="prose prose-sm max-w-none text-neutral-700">
+                <div class="text-body-sm text-[rgb(var(--text))] leading-relaxed">
                     {!! nl2br(e($product->description)) !!}
                 </div>
 
-                {{-- H11: report this listing --}}
                 <div class="mt-4">
                     <x-report-listing :action="route('products.report', $product)" />
                 </div>
 
                 {{-- H10: which vehicles this part fits --}}
                 @if ($product->fitments->isNotEmpty())
-                    <div class="mt-6 bg-neutral-50 border border-neutral-200 rounded-xl p-4">
-                        <div class="text-xs text-neutral-500 uppercase tracking-wide mb-2">Fits these vehicles</div>
+                    <x-card padding="sm" elevation="e0" class="bg-surface-2 mt-6">
+                        <div class="text-overline uppercase text-muted mb-2">Fits these vehicles</div>
                         <div class="flex flex-wrap gap-2">
                             @foreach ($product->fitments as $fitment)
-                                <span class="text-xs font-medium bg-white border border-neutral-200 text-neutral-700 px-2.5 py-1 rounded-full">{{ $fitment->label() }}</span>
+                                <span class="text-caption font-medium bg-surface border border-line text-[rgb(var(--text))] px-2.5 py-1 rounded-full">{{ $fitment->label() }}</span>
                             @endforeach
                         </div>
-                    </div>
+                    </x-card>
                 @endif
             </div>
         </div>
@@ -137,19 +123,10 @@
         {{-- H10: compatible vehicles currently on sale (cross-sell) --}}
         @if ($compatibleVehicles->isNotEmpty())
             <div class="mt-12">
-                <h2 class="text-xl font-semibold text-neutral-900 mb-5">Compatible vehicles for sale</h2>
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                <h2 class="text-h2 text-ink mb-5">Compatible vehicles for sale</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
                     @foreach ($compatibleVehicles as $vehicle)
-                        <a href="{{ route('vehicles.show', $vehicle) }}"
-                           class="group bg-white border border-neutral-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
-                            <div class="aspect-video bg-neutral-100 flex items-center justify-center overflow-hidden">
-                                <x-listing-thumbnail :cover="$vehicle->coverImage()" :alt="$vehicle->displayTitle()" type="vehicle" />
-                            </div>
-                            <div class="p-4 flex flex-col flex-1">
-                                <h3 class="text-sm font-semibold text-neutral-900 group-hover:text-[#F0A820] transition-colors leading-snug mb-2">{{ $vehicle->displayTitle() }}</h3>
-                                <div class="mt-auto text-base font-bold text-neutral-900 tabular-nums">{{ $vehicle->primaryPrice() }}</div>
-                            </div>
-                        </a>
+                        <x-vehicle-card :vehicle="$vehicle" :compare="false" />
                     @endforeach
                 </div>
             </div>
