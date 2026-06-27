@@ -111,6 +111,13 @@ class PartCatalogController extends Controller
 
         $frequentlyBought = $coPurchase->frequentlyBoughtWith($part, (int) config('parts.fbt_count', 4));
 
+        // PM6: service kits that include an offering of this part.
+        $kits = \App\Modules\Parts\Models\PartBundle::active()
+            ->whereHas('items.product', fn ($q) => $q->where('part_id', $part->id))
+            ->with('items.product')
+            ->limit(4)
+            ->get();
+
         return view('parts.show', [
             'part'             => $part,
             'offers'           => $offers,
@@ -118,6 +125,7 @@ class PartCatalogController extends Controller
             'fitsSelection'    => $fitsSelection,
             'alternatives'     => $alternatives,
             'frequentlyBought' => $frequentlyBought,
+            'kits'             => $kits,
         ]);
     }
 

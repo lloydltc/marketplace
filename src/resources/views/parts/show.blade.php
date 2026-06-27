@@ -91,6 +91,21 @@
                     </x-card>
                 @endif
 
+                {{-- PM6: service kits including this part --}}
+                @if (($kits ?? collect())->isNotEmpty())
+                    <x-card padding="lg">
+                        <h2 class="text-h4 text-ink mb-3">Service kits with this part</h2>
+                        <div class="space-y-2">
+                            @foreach ($kits as $kit)
+                                <a href="{{ route('bundles.show', $kit->slug) }}" class="flex items-center justify-between gap-3 border border-line rounded-lg p-3 hover:shadow-e1 transition-shadow">
+                                    <span class="text-body-sm font-medium text-ink">🧰 {{ $kit->name }}</span>
+                                    <span class="text-body-sm font-bold text-ink tabular-nums">USD {{ number_format($kit->effectivePrice(), 2) }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </x-card>
+                @endif
+
                 {{-- PM5: alternatives (curated + OEM-derived) --}}
                 @if ($alternatives->isNotEmpty())
                     <x-card padding="lg">

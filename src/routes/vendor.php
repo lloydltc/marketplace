@@ -69,6 +69,12 @@ Route::middleware('role:vendor_admin')->group(function () {
     Route::put('products/{product}', [VendorProductController::class, 'update'])->name('products.update');
     Route::delete('products/{product}', [VendorProductController::class, 'destroy'])->name('products.destroy');
 
+    // PM6: service-kit bundles
+    Route::get('bundles', [\App\Modules\Parts\Controllers\Vendor\BundleController::class, 'index'])->name('bundles.index');
+    Route::get('bundles/create', [\App\Modules\Parts\Controllers\Vendor\BundleController::class, 'create'])->name('bundles.create');
+    Route::post('bundles', [\App\Modules\Parts\Controllers\Vendor\BundleController::class, 'store'])->name('bundles.store');
+    Route::delete('bundles/{bundle}', [\App\Modules\Parts\Controllers\Vendor\BundleController::class, 'destroy'])->name('bundles.destroy');
+
     // H10: part ⇄ vehicle compatibility (fitments)
     Route::post('products/{product}/fitments', [\App\Modules\Products\Controllers\Vendor\ProductFitmentController::class, 'store'])->name('products.fitments.store');
     Route::delete('products/{product}/fitments/{fitment}', [\App\Modules\Products\Controllers\Vendor\ProductFitmentController::class, 'destroy'])->name('products.fitments.destroy');

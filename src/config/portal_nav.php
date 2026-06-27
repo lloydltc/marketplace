@@ -55,6 +55,7 @@ return [
             'Workspace' => [
                 ['Dashboard', 'vendor.dashboard', 'vendor.dashboard'],
                 ['Products', 'vendor.products.index', 'vendor.products.*'],
+                ['Service kits', 'vendor.bundles.index', 'vendor.bundles.*', 'vendor_admin'],
                 ['Vehicles', 'vendor.vehicles.index', 'vendor.vehicles.*'],
                 ['Sales', 'vendor.orders.index', 'vendor.orders.*'],
                 ['Leads', 'vendor.leads.index', 'vendor.leads.*'],

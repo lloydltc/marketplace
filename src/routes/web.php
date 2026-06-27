@@ -84,6 +84,9 @@ Route::post('parts/vin', [\App\Http\Controllers\PartCatalogController::class, 'v
     ->middleware('throttle:20,1')->name('parts.vin');
 Route::get('parts/{part:slug}', [\App\Http\Controllers\PartCatalogController::class, 'show'])->name('parts.show');
 
+// PM6: public service-kit bundles
+Route::get('kits/{bundle:slug}', [\App\Http\Controllers\BundleController::class, 'show'])->name('bundles.show');
+
 // PM3: cascading fitment selector — JSON cascade + session select/clear (public)
 Route::get('fitment/models', [\App\Http\Controllers\FitmentController::class, 'models'])->name('fitment.models');
 Route::get('fitment/generations', [\App\Http\Controllers\FitmentController::class, 'generations'])->name('fitment.generations');
@@ -120,6 +123,9 @@ Route::middleware('shop.access')->group(function () {
     Route::patch('cart/items/{product}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('cart/items/{product}', [CartController::class, 'remove'])->name('cart.remove');
     Route::delete('cart', [CartController::class, 'clear'])->name('cart.clear');
+
+    // PM6: add a whole service kit (expands to component cart lines)
+    Route::post('kits/{bundle}/add', [\App\Http\Controllers\BundleController::class, 'addToCart'])->name('bundles.add');
 
     Route::get('checkout', [CheckoutController::class, 'show'])->name('checkout.show');
     Route::post('checkout', [CheckoutController::class, 'store'])->name('checkout.store');
