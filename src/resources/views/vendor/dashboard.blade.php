@@ -1,5 +1,5 @@
 <x-layouts.app>
-    <x-slot:title>Vendor Dashboard</x-slot:title>
+    <x-slot:title>Vendor dashboard</x-slot:title>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="lg:flex lg:gap-8">
@@ -8,99 +8,74 @@
 
         {{-- Status banner --}}
         @if ($vendor?->isPending())
-            <div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-xl px-5 py-4 flex items-start gap-3">
-                <svg class="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                </svg>
+            <div class="mb-6 bg-[rgb(var(--warning)/0.12)] border border-[rgb(var(--warning)/0.3)] rounded-xl px-5 py-4 flex items-start gap-3">
+                <svg class="size-5 text-[rgb(var(--warning))] shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
                 <div>
-                    <p class="text-sm font-semibold text-yellow-800">Account pending approval</p>
-                    <p class="text-sm text-yellow-700 mt-0.5">
-                        Your account is being reviewed. Upload your verification documents to speed things up.
-                    </p>
-                    <div class="mt-2 flex gap-3">
-                        <a href="{{ route('vendor.documents.index') }}"
-                           class="text-xs font-medium text-yellow-800 underline">Upload documents</a>
-                        <a href="{{ route('vendor.bank-accounts.index') }}"
-                           class="text-xs font-medium text-yellow-800 underline">Add bank account</a>
+                    <p class="text-body-sm font-semibold text-ink">Account pending approval</p>
+                    <p class="text-body-sm text-muted mt-0.5">Your account is being reviewed. Upload your verification documents to speed things up.</p>
+                    <div class="mt-2 flex gap-4">
+                        <a href="{{ route('vendor.documents.index') }}" class="text-caption font-semibold text-[rgb(var(--info))] hover:underline">Upload documents</a>
+                        <a href="{{ route('vendor.bank-accounts.index') }}" class="text-caption font-semibold text-[rgb(var(--info))] hover:underline">Add bank account</a>
                     </div>
                 </div>
             </div>
         @elseif ($vendor?->isSuspended())
-            <div class="mb-6 bg-red-50 border border-red-200 rounded-xl px-5 py-4">
-                <p class="text-sm font-semibold text-red-800">Account suspended</p>
-                <p class="text-sm text-red-700 mt-0.5">
-                    Your vendor account has been suspended. Contact
-                    <a href="mailto:info@salmadrive.co.zw" class="underline">info@salmadrive.co.zw</a> for assistance.
-                </p>
+            <div class="mb-6 bg-[rgb(var(--danger)/0.12)] border border-[rgb(var(--danger)/0.3)] rounded-xl px-5 py-4">
+                <p class="text-body-sm font-semibold text-ink">Account suspended</p>
+                <p class="text-body-sm text-muted mt-0.5">Your vendor account has been suspended. Contact
+                    <a href="mailto:info@salmadrive.co.zw" class="text-[rgb(var(--info))] underline">info@salmadrive.co.zw</a> for assistance.</p>
             </div>
         @endif
 
         {{-- Header --}}
-        <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center justify-between gap-4 mb-8">
             <div>
-                <h1 class="text-2xl font-semibold text-neutral-900">
-                    {{ $vendor?->name ?? 'Vendor Dashboard' }}
-                </h1>
-                <p class="text-sm text-neutral-500 mt-1">Manage your listings, team, and orders.</p>
+                <h1 class="text-h1 text-ink">{{ $vendor?->name ?? 'Vendor dashboard' }}</h1>
+                <p class="text-body-sm text-muted mt-1">Manage your listings, team, and orders.</p>
             </div>
             @if (Auth::user()->isVendorAdmin())
                 <div class="flex items-center gap-2">
-                    <a href="{{ route('vendor.profile.show') }}"
-                       class="border border-neutral-300 hover:bg-neutral-50 text-neutral-700 font-medium px-4 py-2 rounded-lg text-sm transition-colors">
-                        Profile
-                    </a>
-                    <a href="{{ route('vendor.invitation.create') }}"
-                       class="bg-[#F0A820] hover:bg-[#F0A820]/90 text-[#1A1A24] font-medium px-4 py-2 rounded-lg text-sm transition-colors">
-                        + Invite member
-                    </a>
+                    <x-button variant="outline" :href="route('vendor.profile.show')">Profile</x-button>
+                    <x-button :href="route('vendor.invitation.create')">+ Invite member</x-button>
                 </div>
             @endif
         </div>
 
-        {{-- H9: renew prompts for expiring/expired listings --}}
         <x-renew-prompt :vehicles="$attentionVehicles" renew-route="vendor.vehicles.renew" />
 
-        {{-- KPI cards --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div class="bg-white border border-neutral-200 rounded-xl p-5 shadow-sm">
-                <p class="text-sm font-medium text-neutral-500">Active Listings</p>
-                <p class="mt-2 text-3xl font-semibold text-neutral-900 tabular-nums">{{ number_format($stats['active_listings']) }}</p>
-            </div>
-            <div class="bg-white border border-neutral-200 rounded-xl p-5 shadow-sm">
-                <p class="text-sm font-medium text-neutral-500">Pending Orders</p>
-                <p class="mt-2 text-3xl font-semibold text-neutral-900 tabular-nums">{{ number_format($stats['pending_orders']) }}</p>
-            </div>
-            <div class="bg-white border border-neutral-200 rounded-xl p-5 shadow-sm">
-                <p class="text-sm font-medium text-neutral-500">Team Members</p>
-                <p class="mt-2 text-3xl font-semibold text-neutral-900 tabular-nums">{{ number_format($stats['team_members']) }}</p>
-            </div>
-            <div class="bg-white border border-neutral-200 rounded-xl p-5 shadow-sm">
-                <p class="text-sm font-medium text-neutral-500">Tier</p>
-                <p class="mt-2 text-3xl font-semibold text-neutral-900 capitalize">
-                    {{ $stats['tier'] ?? '—' }}
-                </p>
-            </div>
+        {{-- KPI tiles --}}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            @foreach ([
+                ['Active listings', number_format($stats['active_listings'])],
+                ['Pending orders', number_format($stats['pending_orders'])],
+                ['Team members', number_format($stats['team_members'])],
+                ['Tier', $stats['tier'] ?? '—'],
+            ] as [$label, $value])
+                <div class="bg-surface border border-line rounded-lg p-5 shadow-e1">
+                    <p class="text-overline uppercase text-muted">{{ $label }}</p>
+                    <p class="mt-2 text-display-lg tabular-nums text-ink leading-none capitalize">{{ $value }}</p>
+                </div>
+            @endforeach
         </div>
 
         {{-- Listing management --}}
         @if (Auth::user()->isVendorAdmin())
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <a href="{{ route('vendor.products.create') }}"
-                   class="bg-white border border-neutral-200 rounded-xl p-6 shadow-sm hover:border-[#F0A820] transition-colors flex items-center justify-between">
+                   class="group bg-surface border border-line rounded-lg p-6 shadow-e1 hover:border-brand hover:shadow-e2 transition-all flex items-center justify-between">
                     <div>
-                        <h3 class="text-base font-semibold text-neutral-900">List a product</h3>
-                        <p class="text-sm text-neutral-500 mt-0.5">Add spare parts, accessories, or tools.</p>
+                        <h3 class="text-h4 text-ink">List a product</h3>
+                        <p class="text-body-sm text-muted mt-0.5">Add spare parts, accessories, or tools.</p>
                     </div>
-                    <span class="text-2xl text-[#F0A820]">+</span>
+                    <span class="text-h2 text-brand">+</span>
                 </a>
                 <a href="{{ route('vendor.vehicles.create') }}"
-                   class="bg-white border border-neutral-200 rounded-xl p-6 shadow-sm hover:border-[#F0A820] transition-colors flex items-center justify-between">
+                   class="group bg-surface border border-line rounded-lg p-6 shadow-e1 hover:border-brand hover:shadow-e2 transition-all flex items-center justify-between">
                     <div>
-                        <h3 class="text-base font-semibold text-neutral-900">List a vehicle</h3>
-                        <p class="text-sm text-neutral-500 mt-0.5">Add a car, truck, or other vehicle.</p>
+                        <h3 class="text-h4 text-ink">List a vehicle</h3>
+                        <p class="text-body-sm text-muted mt-0.5">Add a car, truck, or other vehicle.</p>
                     </div>
-                    <span class="text-2xl text-[#F0A820]">+</span>
+                    <span class="text-h2 text-brand">+</span>
                 </a>
             </div>
         @endif

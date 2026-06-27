@@ -1,5 +1,8 @@
 @props([
     'compact' => false,
+    'action' => null,        // defaults to fitment.select
+    'submitLabel' => 'Show compatible parts',
+    'extraFields' => null,   // optional extra inputs (e.g. nickname) rendered in the form
 ])
 
 @php
@@ -32,8 +35,9 @@
         @endif
     </div>
 
-    <form method="POST" action="{{ route('fitment.select') }}" class="grid grid-cols-2 lg:grid-cols-3 gap-3">
+    <form method="POST" action="{{ $action ?? route('fitment.select') }}" class="grid grid-cols-2 lg:grid-cols-3 gap-3">
         @csrf
+        {{ $extraFields }}
 
         <select name="make_id" required x-model="makeId" @change="onMakeChange()"
                 class="border border-line rounded-lg px-3 py-2 text-body-sm bg-surface focus:outline-none focus:ring-2 focus:ring-[rgb(var(--brand)/0.4)]">
@@ -84,7 +88,7 @@
 
         <button type="submit"
                 class="col-span-2 lg:col-span-1 bg-brand hover:opacity-90 text-on-brand font-semibold px-4 py-2 rounded-lg text-body-sm transition-opacity">
-            Show compatible parts
+            {{ $submitLabel }}
         </button>
     </form>
 </div>

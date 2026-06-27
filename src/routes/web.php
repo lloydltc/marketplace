@@ -167,6 +167,12 @@ Route::middleware(['auth', 'verified', 'check.status', 'force.password.change'])
 
     // ─── Buyer surfaces — customers only (a seller is NOT a customer) ───
     Route::middleware('role:customer')->group(function () {
+        // PM7: My Garage (saved vehicles drive fitment context)
+        Route::get('garage', [\App\Http\Controllers\GarageController::class, 'index'])->name('garage.index');
+        Route::post('garage', [\App\Http\Controllers\GarageController::class, 'store'])->name('garage.store');
+        Route::post('garage/{garageVehicle}/activate', [\App\Http\Controllers\GarageController::class, 'activate'])->name('garage.activate');
+        Route::delete('garage/{garageVehicle}', [\App\Http\Controllers\GarageController::class, 'destroy'])->name('garage.destroy');
+
         // Saved searches
         Route::get('saved-searches', [SavedSearchController::class, 'index'])->name('saved-searches.index');
         Route::post('saved-searches', [SavedSearchController::class, 'store'])->name('saved-searches.store');

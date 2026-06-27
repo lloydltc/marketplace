@@ -35,6 +35,7 @@ return [
     // (incl. guests) and to no one else.
     'buyer_links' => [
         ['label' => 'My orders', 'route' => 'orders.index'],
+        ['label' => 'My garage', 'route' => 'garage.index'],
         ['label' => 'Requests', 'route' => 'rfq.index'],
         ['label' => 'Saved searches', 'route' => 'saved-searches.index'],
     ],
