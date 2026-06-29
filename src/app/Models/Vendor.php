@@ -34,6 +34,10 @@ class Vendor extends Model
         'status',
         'tier',
         'featured_until',
+        // VB1: trust-badge tier (computed) + admin manual grant + cached reputation
+        'verification_tier',
+        'manual_tier',
+        'reputation_score',
         'commission_rate',
         'business_registration',
         'tax_id',
@@ -93,6 +97,36 @@ class Vendor extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(VendorDocument::class);
+    }
+
+    /** VB1/VB2: per-dimension verification decisions. */
+    public function verifications(): HasMany
+    {
+        return $this->hasMany(\App\Modules\Verification\Models\VendorVerification::class);
+    }
+
+    /**
+     * VB1: dimensions currently approved & unexpired.
+     *
+     * @return list<string>
+     */
+    public function validVerificationDimensions(): array
+    {
+        return $this->verifications()->valid()->pluck('dimension')->unique()->values()->all();
+    }
+
+    /** VB1: config for the vendor's computed primary badge tier, or null. */
+    public function badgeTierConfig(): ?array
+    {
+        return $this->verification_tier
+            ? config('verification.tiers.' . $this->verification_tier)
+            : null;
+    }
+
+    /** VB1: short label for the current trust badge (e.g. "Premium Dealer"), or null. */
+    public function badgeTierLabel(): ?string
+    {
+        return $this->badgeTierConfig()['label'] ?? null;
     }
 
     public function products(): HasMany
