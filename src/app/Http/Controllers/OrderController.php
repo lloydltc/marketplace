@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Modules\Orders\Models\Order;
 use App\Modules\Payments\Services\PaymentService;
+use App\Modules\Products\Services\InventoryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -14,7 +15,10 @@ use Illuminate\View\View;
  */
 class OrderController extends Controller
 {
-    public function __construct(private readonly PaymentService $payments) {}
+    public function __construct(
+        private readonly PaymentService $payments,
+        private readonly InventoryService $inventory
+    ) {}
 
     public function index(Request $request): View
     {
@@ -53,6 +57,9 @@ class OrderController extends Controller
         $wasPaid = $order->isPaid();
         $order->transitionTo('cancelled', 'Cancelled by customer');
 
+        // PM10: return held stock for canonical-parts offerings.
+        $this->releaseReservedStock($order);
+
         // A paid prepaid order is owed a refund (tied to the Phase 11 gateway).
         if ($wasPaid) {
             $this->payments->markRefunded($order);
@@ -81,4 +88,17 @@ class OrderController extends Controller
     {
         abort_unless($order->buyer_user_id !== null && $order->buyer_user_id === $request->user()->id, 403);
     }
+
+    /** PM10: return reserved stock to canonical-parts offerings on a cancelled order. */
+    private function releaseReservedStock(Order $order): void
+    {
+        $order->loadMissing('items.product');
+
+        foreach ($order->items as $item) {
+            if ($item->product && $item->product->part_id !== null) {
+                $this->inventory->release($item->product, $item->quantity, 'order-cancel:' . $order->id);
+            }
+        }
+    }
 }
+

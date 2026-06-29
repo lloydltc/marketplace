@@ -43,4 +43,10 @@ class OrderItem extends Model
     {
         return $this->belongsTo(Order::class);
     }
+
+    /** The offering (product) this line was bought from; null if since removed. */
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(\App\Modules\Products\Models\Product::class);
+    }
 }

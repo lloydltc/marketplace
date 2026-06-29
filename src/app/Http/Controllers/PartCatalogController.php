@@ -118,14 +118,18 @@ class PartCatalogController extends Controller
             ->limit(4)
             ->get();
 
+        // PM10: part → compatible vehicles for sale (cross-sell, absorbs H10).
+        $compatibleVehicles = $part->compatibleVehicles((int) config('compatibility.vehicles_per_part', 6));
+
         return view('parts.show', [
-            'part'             => $part,
-            'offers'           => $offers,
-            'context'          => $this->context,
-            'fitsSelection'    => $fitsSelection,
-            'alternatives'     => $alternatives,
-            'frequentlyBought' => $frequentlyBought,
-            'kits'             => $kits,
+            'part'               => $part,
+            'offers'             => $offers,
+            'context'            => $this->context,
+            'fitsSelection'      => $fitsSelection,
+            'alternatives'       => $alternatives,
+            'frequentlyBought'   => $frequentlyBought,
+            'kits'               => $kits,
+            'compatibleVehicles' => $compatibleVehicles,
         ]);
     }
 

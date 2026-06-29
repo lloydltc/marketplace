@@ -141,6 +141,38 @@ class Part extends Model
         return $this->fitments()->matchingSelection($selection)->exists();
     }
 
+    /**
+     * PM10: active vehicle listings (for sale) this part fits — the part→vehicle
+     * cross-sell direction. Universal parts don't surface a vehicle list.
+     *
+     * @return \Illuminate\Support\Collection<int, \App\Modules\Vehicles\Models\Vehicle>
+     */
+    public function compatibleVehicles(int $limit = 6): \Illuminate\Support\Collection
+    {
+        $fitments = $this->relationLoaded('fitments') ? $this->fitments : $this->fitments()->get();
+
+        if ($this->is_universal || $fitments->isEmpty()) {
+            return collect();
+        }
+
+        return \App\Modules\Vehicles\Models\Vehicle::query()
+            ->active()
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->where(function ($outer) use ($fitments) {
+                foreach ($fitments as $f) {
+                    $outer->orWhere(function ($q) use ($f) {
+                        $q->where('make_id', $f->make_id)->where('model_id', $f->model_id)
+                          ->when($f->year_start, fn ($w) => $w->where('year', '>=', $f->year_start))
+                          ->when($f->year_end, fn ($w) => $w->where('year', '<=', $f->year_end));
+                    });
+                }
+            })
+            ->with(['make', 'vehicleModel', 'images'])
+            ->latest()
+            ->limit($limit)
+            ->get();
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';

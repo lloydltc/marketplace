@@ -5,6 +5,7 @@ namespace App\Modules\Orders\Services;
 use App\Modules\Cart\DTO\CartGroup;
 use App\Modules\Commerce\Services\CommissionCalculator;
 use App\Modules\Orders\Models\Order;
+use App\Modules\Products\Services\InventoryService;
 use App\Modules\Rfq\Models\Quote;
 use App\Modules\Settings\Services\SettingsService;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +20,8 @@ class OrderService
 {
     public function __construct(
         private readonly CommissionCalculator $commission,
-        private readonly SettingsService $settings
+        private readonly SettingsService $settings,
+        private readonly InventoryService $inventory
     ) {}
 
     /**
@@ -141,6 +143,12 @@ class OrderService
                 'quantity'   => $line->quantity,
                 'line_total' => $line->lineTotal(),
             ]);
+
+            // PM2/PM10: hold stock for canonical-parts offerings (managed inventory).
+            // Legacy products without a part_id are untouched (no behaviour change).
+            if ($line->product->part_id !== null) {
+                $this->inventory->reserve($line->product, $line->quantity, 'order:' . $order->id);
+            }
         }
 
         return $order;

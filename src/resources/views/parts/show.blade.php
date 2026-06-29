@@ -190,5 +190,17 @@
                 </div>
             </section>
         @endif
+
+        {{-- PM10: compatible vehicles for sale (part → vehicle cross-sell) --}}
+        @if (($compatibleVehicles ?? collect())->isNotEmpty())
+            <section class="mt-12">
+                <h2 class="text-h3 text-ink mb-5">Compatible vehicles for sale</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    @foreach ($compatibleVehicles as $vehicle)
+                        <x-vehicle-card :vehicle="$vehicle" :compare="false" />
+                    @endforeach
+                </div>
+            </section>
+        @endif
     </div>
 </x-layouts.app>
