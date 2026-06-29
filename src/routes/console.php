@@ -35,3 +35,6 @@ Schedule::command('alerts:saved-searches')->dailyAt('07:30');
 
 // H11: rule-based auto-flag scan for the moderation queue.
 Schedule::command('moderation:scan')->dailyAt('05:30');
+
+// VB2: recompute badge tiers (auto-demote on expiry) + re-verification reminders.
+Schedule::command('verification:maintain')->dailyAt('06:00');

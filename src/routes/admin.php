@@ -162,6 +162,9 @@ Route::prefix('vendors')->name('vendors.')->group(function () {
     // Tier management
     Route::post('{vendor}/tier', [VendorTierController::class, 'update'])->name('tier.update');
 
+    // VB2: per-dimension verification decisions (recomputes badge tier, audited)
+    Route::post('{vendor}/verifications/{dimension}', [\App\Http\Controllers\Admin\VendorVerificationController::class, 'update'])->name('verifications.update');
+
     // H8: featured-dealer placement (paid)
     Route::post('{vendor}/feature', [\App\Http\Controllers\Admin\DealerFeatureController::class, 'store'])->name('feature');
     Route::delete('{vendor}/feature', [\App\Http\Controllers\Admin\DealerFeatureController::class, 'destroy'])->name('unfeature');
