@@ -124,6 +124,23 @@ Route::prefix('vehicles')->name('vehicles.')->group(function () {
 Route::get('moderation', [\App\Http\Controllers\Admin\ModerationController::class, 'index'])->name('moderation.index');
 Route::post('moderation/{report}/resolve', [\App\Http\Controllers\Admin\ModerationController::class, 'resolve'])->name('moderation.resolve');
 
+// PM9: canonical parts catalog admin (CRUD + OEM/fitment authoring + import + merge)
+Route::prefix('parts')->name('parts.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\PartController::class, 'index'])->name('index');
+    Route::get('create', [\App\Http\Controllers\Admin\PartController::class, 'create'])->name('create');
+    Route::post('/', [\App\Http\Controllers\Admin\PartController::class, 'store'])->name('store');
+    Route::get('import', [\App\Http\Controllers\Admin\PartImportController::class, 'create'])->name('import');
+    Route::post('import', [\App\Http\Controllers\Admin\PartImportController::class, 'process'])->name('import.process');
+    Route::post('merge', [\App\Http\Controllers\Admin\PartMergeController::class, 'merge'])->name('merge');
+    Route::get('{part}/edit', [\App\Http\Controllers\Admin\PartController::class, 'edit'])->name('edit');
+    Route::put('{part}', [\App\Http\Controllers\Admin\PartController::class, 'update'])->name('update');
+    Route::delete('{part}', [\App\Http\Controllers\Admin\PartController::class, 'destroy'])->name('destroy');
+    Route::post('{part}/oem', [\App\Http\Controllers\Admin\PartController::class, 'addOem'])->name('oem.add');
+    Route::delete('{part}/oem/{oem}', [\App\Http\Controllers\Admin\PartController::class, 'removeOem'])->name('oem.remove');
+    Route::post('{part}/fitments', [\App\Http\Controllers\Admin\PartController::class, 'addFitment'])->name('fitments.add');
+    Route::delete('{part}/fitments/{fitment}', [\App\Http\Controllers\Admin\PartController::class, 'removeFitment'])->name('fitments.remove');
+});
+
 // Vendor management
 Route::prefix('vendors')->name('vendors.')->group(function () {
     Route::get('/', [VendorController::class, 'index'])->name('index');
