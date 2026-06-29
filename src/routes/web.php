@@ -87,6 +87,12 @@ Route::get('parts/{part:slug}', [\App\Http\Controllers\PartCatalogController::cl
 // PM6: public service-kit bundles
 Route::get('kits/{bundle:slug}', [\App\Http\Controllers\BundleController::class, 'show'])->name('bundles.show');
 
+// PM8: side-by-side parts comparison (session-backed, public)
+Route::get('parts-compare', [\App\Http\Controllers\PartCompareController::class, 'show'])->name('parts.compare.show');
+Route::post('parts-compare/{part}', [\App\Http\Controllers\PartCompareController::class, 'add'])->name('parts.compare.add');
+Route::delete('parts-compare/{part}', [\App\Http\Controllers\PartCompareController::class, 'remove'])->name('parts.compare.remove');
+Route::delete('parts-compare', [\App\Http\Controllers\PartCompareController::class, 'clear'])->name('parts.compare.clear');
+
 // PM3: cascading fitment selector — JSON cascade + session select/clear (public)
 Route::get('fitment/models', [\App\Http\Controllers\FitmentController::class, 'models'])->name('fitment.models');
 Route::get('fitment/generations', [\App\Http\Controllers\FitmentController::class, 'generations'])->name('fitment.generations');

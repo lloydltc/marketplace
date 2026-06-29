@@ -12,4 +12,7 @@ return [
     // Frequently-bought-together suggestions (PM5, deterministic co-purchase).
     'fbt_count' => (int) env('PARTS_FBT_COUNT', 4),
 
+    // PM8: max parts in a side-by-side comparison.
+    'compare_max' => (int) env('PARTS_COMPARE_MAX', 4),
+
 ];

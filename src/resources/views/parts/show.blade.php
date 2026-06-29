@@ -21,7 +21,10 @@
                             @endif
                         </div>
                         <div class="min-w-0">
-                            <div class="text-caption text-[rgb(var(--text-muted))]">{{ $part->brand }} @if($part->brand && $part->category) · @endif {{ $part->category?->name }}</div>
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="text-caption text-[rgb(var(--text-muted))]">{{ $part->brand }} @if($part->brand && $part->category) · @endif {{ $part->category?->name }}</div>
+                                <x-part-compare-toggle :part="$part" class="shrink-0" />
+                            </div>
                             <h1 class="text-h2 text-ink mt-0.5">{{ $part->name }}</h1>
                             @if ($part->primary_oem)
                                 <div class="text-caption font-mono text-[rgb(var(--text-muted))] mt-1">OEM: {{ $part->primary_oem }}</div>

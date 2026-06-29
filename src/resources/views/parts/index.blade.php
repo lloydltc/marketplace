@@ -78,9 +78,15 @@
 
             {{-- Results --}}
             <div>
-                <p class="text-body-sm text-[rgb(var(--text-muted))] mb-4 tabular-nums">
-                    {{ number_format($parts->total()) }} {{ Str::plural('part', $parts->total()) }} found
-                </p>
+                @php $compareCount = app(\App\Support\PartCompareList::class)->count(); @endphp
+                <div class="flex items-center justify-between gap-3 mb-4">
+                    <p class="text-body-sm text-[rgb(var(--text-muted))] tabular-nums">
+                        {{ number_format($parts->total()) }} {{ Str::plural('part', $parts->total()) }} found
+                    </p>
+                    @if ($compareCount > 0)
+                        <a href="{{ route('parts.compare.show') }}" class="text-body-sm font-semibold text-[rgb(var(--info))] hover:underline">⇄ Compare ({{ $compareCount }})</a>
+                    @endif
+                </div>
 
                 @if ($parts->isEmpty())
                     <div class="py-12 space-y-6">
@@ -90,30 +96,35 @@
                 @else
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
                         @foreach ($parts as $part)
-                            <a href="{{ route('parts.show', $part->slug) }}"
-                               class="group bg-surface border border-line rounded-xl shadow-e1 hover:shadow-e2 transition-shadow overflow-hidden flex flex-col">
-                                <div class="aspect-square bg-surface-2 flex items-center justify-center overflow-hidden">
-                                    @if ($part->primaryImage())
-                                        <img src="{{ $part->primaryImage()->url() }}" alt="{{ $part->name }}" class="w-full h-full object-cover">
-                                    @else
-                                        <span class="text-4xl text-[rgb(var(--text-muted))]">🔧</span>
-                                    @endif
+                            <div class="relative group">
+                                <div class="absolute top-2 right-2 z-10">
+                                    <x-part-compare-toggle :part="$part" />
                                 </div>
-                                <div class="p-4 flex flex-col flex-1">
-                                    @if ($context->has())
-                                        <span class="self-start mb-2 text-caption font-semibold bg-[rgb(var(--success)/0.15)] text-[rgb(var(--success))] px-2 py-0.5 rounded-full">✓ Fits</span>
-                                    @endif
-                                    <div class="text-caption text-[rgb(var(--text-muted))] mb-1">{{ $part->brand ?? $part->category?->name }}</div>
-                                    <h3 class="text-body-sm font-semibold text-ink line-clamp-2 group-hover:text-brand transition-colors">{{ $part->name }}</h3>
-                                    <div class="mt-auto pt-3 text-body font-bold text-ink tabular-nums">
-                                        @if ($part->price_from !== null)
-                                            from USD {{ number_format((float) $part->price_from, 2) }}
+                                <a href="{{ route('parts.show', $part->slug) }}"
+                                   class="bg-surface border border-line rounded-xl shadow-e1 hover:shadow-e2 transition-shadow overflow-hidden flex flex-col h-full">
+                                    <div class="aspect-square bg-surface-2 flex items-center justify-center overflow-hidden">
+                                        @if ($part->primaryImage())
+                                            <img src="{{ $part->primaryImage()->url() }}" alt="{{ $part->name }}" class="w-full h-full object-cover">
                                         @else
-                                            <span class="text-[rgb(var(--text-muted))] text-body-sm">See offers</span>
+                                            <span class="text-4xl text-[rgb(var(--text-muted))]">🔧</span>
                                         @endif
                                     </div>
-                                </div>
-                            </a>
+                                    <div class="p-4 flex flex-col flex-1">
+                                        @if ($context->has())
+                                            <span class="self-start mb-2 text-caption font-semibold bg-[rgb(var(--success)/0.15)] text-[rgb(var(--success))] px-2 py-0.5 rounded-full">✓ Fits</span>
+                                        @endif
+                                        <div class="text-caption text-[rgb(var(--text-muted))] mb-1">{{ $part->brand ?? $part->category?->name }}</div>
+                                        <h3 class="text-body-sm font-semibold text-ink line-clamp-2 group-hover:text-brand transition-colors">{{ $part->name }}</h3>
+                                        <div class="mt-auto pt-3 text-body font-bold text-ink tabular-nums">
+                                            @if ($part->price_from !== null)
+                                                from USD {{ number_format((float) $part->price_from, 2) }}
+                                            @else
+                                                <span class="text-[rgb(var(--text-muted))] text-body-sm">See offers</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
                         @endforeach
                     </div>
 
