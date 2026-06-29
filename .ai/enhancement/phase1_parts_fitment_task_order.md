@@ -239,4 +239,29 @@ Root-cause before fixing; treat findings as classes; authorization server-side; 
 
 ---
 
-*Version 1.0 · Phase 1 of master_build_roadmap.md · Companion: BUSINESS_MODEL.md, design/, task_execution_order.md v2.0 · Status: Ready for execution*
+*Version 1.0 · Phase 1 of master_build_roadmap.md · Companion: BUSINESS_MODEL.md, design/, task_execution_order.md v2.0 · Status: **COMPLETE** (PM0–PM11), full suite 612 green*
+
+---
+
+## Completion log (PM0–PM11)
+
+All tasks delivered, committed, and verified. **Key model decision honoured:** the
+existing `products` table is the vendor **offering** (nullable `part_id` → canonical
+`parts`); money stays **decimal** (existing spine reused, not forked to minor units);
+fitment authored once on the canonical part with H10 reconciled (its product_fitments
+kept as a fallback); categories reused.
+
+| Task | Delivered |
+|------|-----------|
+| PM0 | Canonical taxonomy (generations/variants/engines/transmissions, additive) + TaxonomyService cache |
+| PM1 | Canonical parts catalog (parts, OEM, alternatives, guides, media) reusing `categories` |
+| PM2 | Offerings on `products` + auditable `inventory_movements` (never negative) |
+| PM3 | Fitment engine (`part_fitments`, null-dimension = applies-to-all, year ranges) + cascading selector + session context |
+| PM4 | Catalog browse (fitment-filtered, facets, keyword/OEM) + deterministic VIN decode + empty→RFQ |
+| PM5 | Part detail: offers compare, alternatives, FBT (co-purchase counts), warranty, guides |
+| PM6 | Service-kit bundles · PM7 My Garage · PM8 parts comparison |
+| PM9 | Admin catalog CRUD + fitment authoring + CSV import (dry-run/errors) + duplicate merge, all audited |
+| PM10 | Offerings ride the existing money spine; reserve-on-order/release-on-cancel (guarded to part offerings); part⇄vehicle cross-sell |
+| PM11 | End-to-end QA gate + invariants; full regression 612 green |
+
+*Status: Ready for execution → DELIVERED.*
