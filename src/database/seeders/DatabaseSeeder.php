@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             VehicleMakeSeeder::class,
             VehicleTaxonomySeeder::class,
             FeatureDefinitionSeeder::class,
+            HistoryDataSourceSeeder::class,
         ]);
     }
 }
