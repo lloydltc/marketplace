@@ -8,10 +8,15 @@
                 <p class="text-body-sm text-muted mt-1">Up to {{ config('engagement.compare.max_items') }} side by side — differences are highlighted.</p>
             </div>
             @if ($vehicles->isNotEmpty())
-                <form method="POST" action="{{ route('compare.clear') }}">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="text-body-sm text-muted hover:text-[rgb(var(--text))] transition-colors">Clear all</button>
-                </form>
+                <div class="flex items-center gap-3 print:hidden">
+                    <a href="{{ route('compare.show', ['v' => $vehicles->pluck('id')->implode(',')]) }}"
+                       class="text-body-sm text-[rgb(var(--info))] hover:underline">Share</a>
+                    <button type="button" onclick="window.print()" class="text-body-sm text-[rgb(var(--info))] hover:underline">Print</button>
+                    <form method="POST" action="{{ route('compare.clear') }}">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="text-body-sm text-muted hover:text-[rgb(var(--text))] transition-colors">Clear all</button>
+                    </form>
+                </div>
             @endif
         </div>
 
@@ -21,6 +26,12 @@
             </x-empty>
         @else
             @php
+                $fc = config('engagement.compare.fuel_cost');
+                $fuelCost = function ($v) use ($fc) {
+                    $lpk = $fc['l_per_100km'][$v->fuel_type] ?? $fc['l_per_100km']['other'];
+                    $cost = ($fc['annual_km'] / 100) * $lpk * $fc['price_per_litre_usd'] * $fc['years'];
+                    return $lpk > 0 ? 'USD ' . number_format($cost, 0) : 'N/A (electric)';
+                };
                 $rows = [
                     ['Price', fn ($v) => $v->primaryPrice()],
                     ['Year', fn ($v) => (string) $v->year],
@@ -28,49 +39,25 @@
                     ['Body type', fn ($v) => ucfirst((string) $v->body_type)],
                     ['Transmission', fn ($v) => ucfirst((string) $v->transmission)],
                     ['Fuel', fn ($v) => ucfirst((string) $v->fuel_type)],
+                    ['Engine', fn ($v) => $v->engine_cc ? number_format($v->engine_cc) . ' cc' : '—'],
+                    ['Est. ' . $fc['years'] . '-yr fuel', $fuelCost],
                     ['Condition', fn ($v) => ucfirst((string) $v->condition)],
                     ['Steering', fn ($v) => $v->steering ? strtoupper($v->steering) : '—'],
                     ['Seller', fn ($v) => $v->isListedByVendor() ? 'Dealer' : 'Private'],
                 ];
             @endphp
 
-            <div class="overflow-x-auto bg-surface border border-line rounded-xl shadow-e1">
-                <table class="w-full text-body-sm border-collapse">
-                    <thead>
-                        <tr class="border-b border-line">
-                            <th class="sticky left-0 z-10 bg-surface px-5 py-4 text-left text-overline uppercase text-muted w-36">Listing</th>
-                            @foreach ($vehicles as $v)
-                                <th class="px-5 py-4 text-left align-top min-w-[200px]">
-                                    <a href="{{ route('vehicles.show', $v) }}" class="block group">
-                                        <div class="aspect-video bg-surface-2 rounded-lg overflow-hidden mb-2 grid place-items-center">
-                                            <x-listing-thumbnail :cover="$v->coverImage()" :alt="$v->displayTitle()" type="vehicle" />
-                                        </div>
-                                        <span class="font-semibold text-ink group-hover:text-brand transition-colors">{{ $v->displayTitle() }}</span>
-                                    </a>
-                                    <form method="POST" action="{{ route('compare.remove', $v) }}" class="mt-2">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="text-caption text-muted hover:text-[rgb(var(--danger))] transition-colors">Remove</button>
-                                    </form>
-                                </th>
-                            @endforeach
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($rows as [$label, $resolver])
-                            @php
-                                $values = $vehicles->map($resolver)->all();
-                                $differs = count(array_unique($values)) > 1;
-                            @endphp
-                            <tr class="border-t border-line">
-                                <td class="sticky left-0 z-10 bg-surface px-5 py-3 text-overline uppercase text-muted">{{ $label }}</td>
-                                @foreach ($values as $value)
-                                    <td class="px-5 py-3 tabular-nums {{ $differs ? 'bg-[rgb(var(--brand)/0.08)] font-medium text-ink' : 'text-[rgb(var(--text))]' }}">{{ $value }}</td>
-                                @endforeach
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+            <x-compare-table
+                :items="$vehicles"
+                :rows="$rows"
+                type="vehicle"
+                :title="fn ($v) => $v->displayTitle()"
+                :href="fn ($v) => route('vehicles.show', $v)"
+                :image="fn ($v) => $v->coverImage()"
+                :remove-action="fn ($v) => route('compare.remove', $v)"
+            />
+
+            <p class="text-caption text-muted mt-3">Fuel estimate: {{ number_format(config('engagement.compare.fuel_cost.annual_km')) }} km/yr at USD {{ number_format(config('engagement.compare.fuel_cost.price_per_litre_usd'), 2) }}/L — indicative only.</p>
         @endif
     </div>
 </x-layouts.app>

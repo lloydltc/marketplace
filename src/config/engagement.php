@@ -6,8 +6,19 @@ return [
     // them in controllers or views.
 
     'compare' => [
-        // Maximum vehicles a buyer can line up side-by-side at once.
-        'max_items' => (int) env('ENGAGEMENT_COMPARE_MAX', 4),
+        // Maximum vehicles a buyer can line up side-by-side at once (AC3: up to 5).
+        'max_items' => (int) env('ENGAGEMENT_COMPARE_MAX', 5),
+
+        // AC3: deterministic running-cost estimate inputs (no AI). Used for the
+        // "Est. fuel cost" comparison row.
+        'fuel_cost' => [
+            'annual_km'           => (int) env('COMPARE_ANNUAL_KM', 15000),
+            'price_per_litre_usd' => (float) env('COMPARE_FUEL_PRICE', 1.50),
+            'years'               => (int) env('COMPARE_FUEL_YEARS', 5),
+            'l_per_100km'         => [
+                'petrol' => 9.0, 'diesel' => 7.0, 'hybrid' => 5.0, 'electric' => 0.0, 'other' => 9.0,
+            ],
+        ],
     ],
 
     'recently_viewed' => [
