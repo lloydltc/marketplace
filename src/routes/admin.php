@@ -165,6 +165,9 @@ Route::prefix('vendors')->name('vendors.')->group(function () {
     // VB2: per-dimension verification decisions (recomputes badge tier, audited)
     Route::post('{vendor}/verifications/{dimension}', [\App\Http\Controllers\Admin\VendorVerificationController::class, 'update'])->name('verifications.update');
 
+    // VB4: badge revocation/reinstatement + manual tier grant (audited)
+    Route::post('{vendor}/badge', [\App\Http\Controllers\Admin\VendorBadgeController::class, 'update'])->name('badge.update');
+
     // H8: featured-dealer placement (paid)
     Route::post('{vendor}/feature', [\App\Http\Controllers\Admin\DealerFeatureController::class, 'store'])->name('feature');
     Route::delete('{vendor}/feature', [\App\Http\Controllers\Admin\DealerFeatureController::class, 'destroy'])->name('unfeature');

@@ -59,4 +59,12 @@ return [
         // Subtle search-ranking boost per reputation point (config-driven; 0 disables).
         'ranking_boost_per_point' => (float) env('REP_RANKING_BOOST', 0.0),
     ],
+
+    // VB4: deterministic fraud rules (no AI) → moderation queue.
+    'fraud' => [
+        // Same owner, same normalised listing title, this many active listings
+        // created within the window → rapid-relist flag.
+        'rapid_relist_threshold'    => (int) env('FRAUD_RAPID_RELIST_THRESHOLD', 4),
+        'rapid_relist_window_hours' => (int) env('FRAUD_RAPID_RELIST_WINDOW_HOURS', 24),
+    ],
 ];

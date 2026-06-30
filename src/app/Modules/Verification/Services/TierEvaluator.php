@@ -18,6 +18,11 @@ class TierEvaluator
      */
     public function earnedTiers(Vendor $vendor): array
     {
+        // VB4: a revoked badge suppresses all tiers until reinstated.
+        if ($vendor->isBadgeRevoked()) {
+            return [];
+        }
+
         $approved = $vendor->validVerificationDimensions();   // list<string>
         // Cached reputation score column (populated in VB3); absent → 0.
         $reputation = (int) ($vendor->reputation_score ?? 0);

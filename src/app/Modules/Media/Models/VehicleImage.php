@@ -37,6 +37,7 @@ class VehicleImage extends Model
         'file_size',
         'display_order',
         'processed_at',
+        'image_hash',
     ];
 
     protected function casts(): array

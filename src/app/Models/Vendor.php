@@ -38,6 +38,8 @@ class Vendor extends Model
         'verification_tier',
         'manual_tier',
         'reputation_score',
+        'badge_revoked_at',
+        'badge_revoked_reason',
         'commission_rate',
         'business_registration',
         'tax_id',
@@ -52,6 +54,8 @@ class Vendor extends Model
             'verified_at'     => 'datetime',
             'suspended_at'    => 'datetime',
             'featured_until'  => 'datetime',
+            'badge_revoked_at' => 'datetime',
+            'reputation_score' => 'integer',
             'commission_rate' => 'float',
             'cod_eligible'    => 'boolean',
         ];
@@ -133,6 +137,12 @@ class Vendor extends Model
     public function badgeTierLabel(): ?string
     {
         return $this->badgeTierConfig()['label'] ?? null;
+    }
+
+    /** VB4: admin has revoked this vendor's trust badge. */
+    public function isBadgeRevoked(): bool
+    {
+        return $this->badge_revoked_at !== null;
     }
 
     public function products(): HasMany

@@ -41,3 +41,6 @@ Schedule::command('verification:maintain')->dailyAt('06:00');
 
 // VB3: recompute vendor reputation scores (feeds Top-Rated tier + ranking).
 Schedule::command('reputation:recompute')->dailyAt('06:30');
+
+// VB4: deterministic fraud scan (duplicate photos, rapid relist) → moderation.
+Schedule::command('fraud:scan')->dailyAt('05:45');
