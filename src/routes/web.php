@@ -171,6 +171,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Authenticated + verified + active status + force-password-check routes
 Route::middleware(['auth', 'verified', 'check.status', 'force.password.change'])->group(function () {
 
+    // AC1: in-app notification inbox + channel preferences (all authenticated roles)
+    Route::get('notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::get('notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read'])->name('notifications.read');
+    Route::get('notification-preferences', [\App\Http\Controllers\NotificationController::class, 'preferences'])->name('notifications.preferences');
+    Route::put('notification-preferences', [\App\Http\Controllers\NotificationController::class, 'updatePreferences'])->name('notifications.preferences.update');
+
     // ─── Buyer surfaces — customers only (a seller is NOT a customer) ───
     Route::middleware('role:customer')->group(function () {
         // PM7: My Garage (saved vehicles drive fitment context)

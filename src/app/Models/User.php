@@ -111,6 +111,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Vehicle::class, 'user_id');
     }
 
+    /** AC1: per-type notification channel preferences. */
+    public function notificationPreferences(): HasMany
+    {
+        return $this->hasMany(\App\Modules\Notifications\Models\NotificationPreference::class);
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
     public function isVendorAdmin(): bool
