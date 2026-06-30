@@ -33,6 +33,9 @@ Schedule::command('analytics:aggregate')->hourly();
 // H7: email buyers about new listings matching their saved-search alerts.
 Schedule::command('alerts:saved-searches')->dailyAt('07:30');
 
+// AC2: notify saved-search owners about price drops on matching vehicles.
+Schedule::command('alerts:price-drops')->dailyAt('07:45');
+
 // H11: rule-based auto-flag scan for the moderation queue.
 Schedule::command('moderation:scan')->dailyAt('05:30');
 

@@ -102,6 +102,29 @@ class Vehicle extends Model
                 $vehicle->id = (string) Str::uuid();
             }
         });
+
+        // AC2: capture price changes (drives price-drop alerts). USD is canonical;
+        // fall back to ZWL when a listing is priced only in ZWL.
+        static::updated(function (self $vehicle) {
+            $field = $vehicle->price_usd !== null ? 'price_usd' : 'price_zwl';
+            if (! $vehicle->wasChanged($field)) {
+                return;
+            }
+            $old = $vehicle->getOriginal($field);
+            $new = $vehicle->{$field};
+            if ($old === null || $new === null) {
+                return;
+            }
+
+            \App\Modules\Notifications\Models\ListingPriceHistory::create([
+                'subject_type' => self::class,
+                'subject_id'   => $vehicle->id,
+                'old_price'    => $old,
+                'new_price'    => $new,
+                'currency'     => $field === 'price_usd' ? 'USD' : 'ZWL',
+                'is_drop'      => (float) $new < (float) $old,
+            ]);
+        });
     }
 
     // ─── Relationships ────────────────────────────────────────────────────────
@@ -381,6 +404,31 @@ class Vehicle extends Model
     public function scopeOfType(Builder $query, ?string $type): Builder
     {
         return $type ? $query->where('vehicle_type', $type) : $query;
+    }
+
+    /**
+     * AC2: deterministic "similar vehicles" — same listing type, same make or body
+     * type, within a price band, newest first. No AI.
+     *
+     * @return \Illuminate\Support\Collection<int, Vehicle>
+     */
+    public function similar(int $limit = 4, float $band = 0.30): \Illuminate\Support\Collection
+    {
+        $priceField = $this->price_usd !== null ? 'price_usd' : 'price_zwl';
+        $price = (float) ($this->{$priceField} ?? 0);
+
+        return static::query()
+            ->active()
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->where('id', '!=', $this->id)
+            ->where('vehicle_type', $this->vehicle_type)
+            ->where(fn ($q) => $q->where('make_id', $this->make_id)->orWhere('body_type', $this->body_type))
+            ->when($price > 0, fn ($q) => $q->whereBetween($priceField, [$price * (1 - $band), $price * (1 + $band)]))
+            ->with(['make', 'vehicleModel', 'images'])
+            ->orderByRaw('CASE WHEN make_id = ? THEN 0 ELSE 1 END', [$this->make_id])
+            ->latest()
+            ->limit($limit)
+            ->get();
     }
 
     /**

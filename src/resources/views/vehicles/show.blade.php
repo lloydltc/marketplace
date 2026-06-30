@@ -195,5 +195,8 @@
     @endif
 
     {{-- H7: other listings this buyer has recently viewed --}}
+    {{-- AC2: deterministic similar vehicles --}}
+    <x-vehicle-row title="Similar vehicles" :vehicles="$similar" />
+
     <x-vehicle-row title="Recently viewed" :vehicles="$recentlyViewed" />
 </x-layouts.app>

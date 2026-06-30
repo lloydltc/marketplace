@@ -3,20 +3,16 @@
 namespace App\Notifications;
 
 use App\Models\SavedSearch;
-use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
 use Illuminate\Support\Collection;
 
 /**
- * H7: emails a buyer the new listings that matched one of their saved searches
- * since the last digest. Doubles as a price alert when the saved search carries a
- * max-price filter.
+ * H7 + AC2: tells a buyer about new listings matching a saved search since the
+ * last digest. Fans out across the buyer's chosen channels (in-app + email by
+ * default) via the shared notification architecture.
  */
-class SavedSearchAlertNotification extends Notification
+class SavedSearchAlertNotification extends ChannelAwareNotification
 {
-    use Queueable;
-
     /**
      * @param  Collection<int, \App\Modules\Vehicles\Models\Vehicle>  $matches
      */
@@ -26,10 +22,19 @@ class SavedSearchAlertNotification extends Notification
         public readonly int $totalNew,
     ) {}
 
-    /** @return array<int, string> */
-    public function via(object $notifiable): array
+    public function type(): string
     {
-        return ['mail'];
+        return 'alert.new_match';
+    }
+
+    /** @return array<string, mixed> */
+    public function payload(object $notifiable): array
+    {
+        return [
+            'title' => "{$this->totalNew} new match(es) for “{$this->search->name}”",
+            'body'  => $this->matches->map->displayTitle()->take(3)->implode(', '),
+            'url'   => $this->search->url(),
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

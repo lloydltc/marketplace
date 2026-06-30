@@ -109,6 +109,15 @@ class VehicleRepository implements VehicleRepositoryInterface
         return $query->count();
     }
 
+    /** AC2: does a publicly-visible vehicle satisfy a saved search's filter set? */
+    public function matchesPublicly(string $vehicleId, array $filters = []): bool
+    {
+        $query = $this->publicBaseQuery()->whereKey($vehicleId);
+        $this->applyCommonFilters($query, $filters);
+
+        return $query->exists();
+    }
+
     public function countByType(): array
     {
         return $this->publicBaseQuery()

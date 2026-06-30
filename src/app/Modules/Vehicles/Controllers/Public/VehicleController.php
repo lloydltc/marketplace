@@ -77,7 +77,10 @@ class VehicleController extends Controller
             ->limit((int) config('compatibility.parts_per_vehicle', 8))
             ->get();
 
-        return view('vehicles.show', compact('vehicle', 'recentlyViewed', 'compatibleParts'));
+        // AC2: deterministic similar-vehicles re-engagement row.
+        $similar = $vehicle->similar(4);
+
+        return view('vehicles.show', compact('vehicle', 'recentlyViewed', 'compatibleParts', 'similar'));
     }
 
     /**
