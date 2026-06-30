@@ -50,7 +50,14 @@
                         </a>
                     @endif
 
-                    <div class="mb-3"><x-expiry-badge :vehicle="$vehicle" /></div>
+                    <div class="mb-3 flex flex-wrap items-center gap-2">
+                        <x-expiry-badge :vehicle="$vehicle" />
+                        {{-- HR3: vehicle history report --}}
+                        <a href="{{ route('history.preview', $vehicle) }}"
+                           class="inline-flex items-center gap-1 text-caption font-semibold bg-[rgb(var(--info)/0.15)] text-[rgb(var(--info))] px-2 py-0.5 rounded-full hover:underline">
+                            📄 Vehicle history available
+                        </a>
+                    </div>
 
                     {{-- H2: Zimbabwe-market badges --}}
                     @if ($vehicle->is_recent_import || $vehicle->duty_paid || $vehicle->steering)

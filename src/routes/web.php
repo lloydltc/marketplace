@@ -60,6 +60,9 @@ Route::get('products/{product}', [PublicProductController::class, 'show'])->name
 Route::get('vehicles', [PublicVehicleController::class, 'index'])->name('vehicles.index');
 Route::get('vehicles/{vehicle}', [PublicVehicleController::class, 'show'])->name('vehicles.show');
 
+// HR3: free vehicle history report preview (public)
+Route::get('vehicles/{vehicle}/history', [\App\Http\Controllers\HistoryReportController::class, 'preview'])->name('history.preview');
+
 // D6: record a contact/lead and reveal seller details (public, guest-friendly, rate-limited)
 Route::post('vehicles/{vehicle}/contact', [\App\Http\Controllers\ListingContactController::class, 'vehicle'])
     ->middleware('throttle:20,1')->name('vehicles.contact');
@@ -205,6 +208,13 @@ Route::middleware(['auth', 'verified', 'check.status', 'force.password.change'])
         Route::get('requests/{partRequest}', [RfqController::class, 'show'])->name('rfq.show');
         Route::post('requests/{partRequest}/quotes/{quote}/accept', [RfqController::class, 'accept'])->name('rfq.accept');
         Route::post('requests/{partRequest}/close', [RfqController::class, 'close'])->name('rfq.close');
+
+        // HR3: vehicle history reports (purchase + view + purchased list)
+        Route::post('vehicles/{vehicle}/history/purchase', [\App\Http\Controllers\HistoryReportController::class, 'purchase'])
+            ->middleware('throttle:20,1')->name('history.purchase');
+        Route::get('history', [\App\Http\Controllers\HistoryReportController::class, 'index'])->name('history.index');
+        Route::get('history/{report}', [\App\Http\Controllers\HistoryReportController::class, 'show'])->name('history.show');
+        Route::get('history/{report}/return', [\App\Http\Controllers\HistoryReportController::class, 'paymentReturn'])->name('history.return');
 
         // Buyer order history
         Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
