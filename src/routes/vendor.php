@@ -32,6 +32,9 @@ Route::get('vehicles/{vehicle}', [VendorVehicleController::class, 'show'])->name
 // Profile (vendor_admin + vendor_worker can view; only vendor_admin can edit)
 Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
 
+// VB5: verification progress (current badge + path to next tier)
+Route::get('verification', [\App\Http\Controllers\Vendor\VerificationProgressController::class, 'show'])->name('verification.show');
+
 // Orders (vendor_admin + vendor_worker can view & advance fulfilment)
 Route::get('orders', [VendorOrderController::class, 'index'])->name('orders.index');
 Route::get('orders/{order}', [VendorOrderController::class, 'show'])->name('orders.show');

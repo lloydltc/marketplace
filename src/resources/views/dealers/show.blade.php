@@ -23,6 +23,8 @@
                     <div class="flex items-center gap-2 flex-wrap">
                         <h1 class="text-h1 font-bold text-white">{{ $vendor->name }}</h1>
                         <span class="inline-flex items-center gap-1 text-caption font-semibold bg-[rgb(var(--success)/0.2)] text-[rgb(var(--success))] px-2 py-0.5 rounded-full">✓ Verified dealer</span>
+                        {{-- VB5: trust tier badge --}}
+                        <x-trust-badge :vendor="$vendor" />
                         @if ($vendor->isFeaturedDealer())
                             <span class="inline-flex items-center gap-1 text-caption font-semibold bg-[rgb(var(--brand)/0.2)] text-brand px-2 py-0.5 rounded-full">★ Featured</span>
                         @endif

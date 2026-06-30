@@ -16,8 +16,12 @@
         </div>
         <div class="min-w-0">
             <h3 class="text-h4 text-[rgb(var(--text-strong))] group-hover:text-brand transition-colors truncate">{{ $dealer->name }}</h3>
-            <div class="flex items-center gap-1.5 mt-1">
-                <x-badge variant="verified" />
+            <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                @if ($dealer->verification_tier)
+                    <x-trust-badge :vendor="$dealer" size="xs" />
+                @else
+                    <x-badge variant="verified" />
+                @endif
                 @if ($featured || $dealer->isFeaturedDealer())
                     <x-badge variant="featured" />
                 @endif

@@ -69,6 +69,45 @@ class TierEvaluator
         return $best;
     }
 
+    /**
+     * VB5: a vendor-facing progress summary — per-dimension status, earned tiers,
+     * and what's still needed for the next (lowest-rank, non-manual) tier.
+     *
+     * @return array{current: ?string, earned: list<string>, dimensions: array<string, string>, next: ?array}
+     */
+    public function progress(Vendor $vendor): array
+    {
+        $approved = $vendor->validVerificationDimensions();
+        $byDimension = $vendor->verifications()->pluck('status', 'dimension')->all();
+
+        $dimensions = [];
+        foreach (config('verification.dimensions', []) as $dim) {
+            $dimensions[$dim] = in_array($dim, $approved, true) ? 'approved' : ($byDimension[$dim] ?? 'missing');
+        }
+
+        $earned = $this->earnedTiers($vendor);
+        $reputation = (int) ($vendor->reputation_score ?? 0);
+
+        // Next tier = lowest-rank non-manual tier not yet earned.
+        $candidates = collect(config('verification.tiers', []))
+            ->reject(fn ($def, $key) => ! empty($def['manual_only']) || in_array($key, $earned, true))
+            ->sortBy('rank');
+
+        $next = null;
+        foreach ($candidates as $key => $def) {
+            $next = [
+                'tier'                => $key,
+                'label'               => $def['label'],
+                'missing_dimensions'  => array_values(array_diff($def['required_dimensions'] ?? [], $approved)),
+                'needs_reputation'    => ($def['min_reputation'] ?? null) !== null && $reputation < $def['min_reputation']
+                    ? $def['min_reputation'] : null,
+            ];
+            break;
+        }
+
+        return ['current' => $vendor->verification_tier, 'earned' => $earned, 'dimensions' => $dimensions, 'next' => $next];
+    }
+
     /** Recompute and persist the vendor's primary badge tier. Returns it. */
     public function recompute(Vendor $vendor): ?string
     {

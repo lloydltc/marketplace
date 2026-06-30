@@ -157,6 +157,65 @@
             </div>
         </div>
 
+        {{-- VB5: trust badge & verification management --}}
+        <div class="bg-white border border-neutral-200 rounded-xl shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+                <div>
+                    <h2 class="text-base font-semibold text-neutral-900">Trust badge &amp; verification</h2>
+                    <p class="text-sm text-neutral-500 mt-0.5">
+                        Tier:
+                        <strong>{{ $vendor->verification_tier ? config('verification.tiers.' . $vendor->verification_tier . '.label') : 'None' }}</strong>
+                        · Reputation: <strong class="tabular-nums">{{ $vendor->reputation_score }}/100</strong>
+                        @if ($vendor->isBadgeRevoked())<span class="ml-2 text-xs font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Revoked</span>@endif
+                    </p>
+                </div>
+            </div>
+
+            {{-- Per-dimension decisions (VB2) --}}
+            @php $dims = $vendor->verifications()->pluck('status', 'dimension')->all(); @endphp
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                @foreach (config('verification.dimensions') as $dimension)
+                    <div class="flex items-center justify-between gap-2 border border-neutral-200 rounded-lg px-3 py-2">
+                        <div>
+                            <div class="text-sm font-medium text-neutral-800 capitalize">{{ str_replace('_', ' ', $dimension) }}</div>
+                            <div class="text-xs text-neutral-500 capitalize">{{ $dims[$dimension] ?? 'not submitted' }}</div>
+                        </div>
+                        <form method="POST" action="{{ route('admin.vendors.verifications.update', [$vendor, $dimension]) }}" class="flex gap-1">
+                            @csrf
+                            <button name="status" value="approved" class="text-xs font-medium bg-green-600 text-white px-2 py-1 rounded">Approve</button>
+                            <button name="status" value="rejected" class="text-xs font-medium border border-neutral-300 text-neutral-600 px-2 py-1 rounded">Reject</button>
+                        </form>
+                    </div>
+                @endforeach
+            </div>
+
+            {{-- Badge actions (VB4) --}}
+            <div class="flex flex-wrap items-end gap-3 pt-3 border-t border-neutral-100">
+                @if ($vendor->isBadgeRevoked())
+                    <form method="POST" action="{{ route('admin.vendors.badge.update', $vendor) }}">
+                        @csrf <input type="hidden" name="action" value="reinstate">
+                        <button class="text-sm font-medium bg-[#2EBD7A] text-white px-3 py-2 rounded-lg">Reinstate badge</button>
+                    </form>
+                @else
+                    <form method="POST" action="{{ route('admin.vendors.badge.update', $vendor) }}" class="flex items-end gap-2">
+                        @csrf <input type="hidden" name="action" value="revoke">
+                        <input type="text" name="reason" placeholder="Revoke reason" class="border border-neutral-200 rounded-lg px-3 py-2 text-sm">
+                        <button class="text-sm font-medium border border-red-300 text-red-600 px-3 py-2 rounded-lg">Revoke badge</button>
+                    </form>
+                @endif
+
+                <form method="POST" action="{{ route('admin.vendors.badge.update', $vendor) }}" class="flex items-end gap-2">
+                    @csrf <input type="hidden" name="action" value="grant">
+                    <select name="manual_tier" class="border border-neutral-200 rounded-lg px-3 py-2 text-sm">
+                        @foreach (config('verification.tiers') as $key => $def)
+                            <option value="{{ $key }}">{{ $def['label'] }}</option>
+                        @endforeach
+                    </select>
+                    <button class="text-sm font-medium bg-[#1A1A24] text-white px-3 py-2 rounded-lg">Grant</button>
+                </form>
+            </div>
+        </div>
+
         {{-- Details grid --}}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 

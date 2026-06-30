@@ -65,6 +65,7 @@ return [
             ],
             'Manage' => [
                 ['Wallet', 'vendor.wallet.show', 'vendor.wallet.*', 'vendor_admin'],
+                ['Verification', 'vendor.verification.show', 'vendor.verification.*', 'vendor_admin'],
                 ['Team', 'vendor.team.index', 'vendor.team.*', 'vendor_admin'],
                 ['Documents', 'vendor.documents.index', 'vendor.documents.*', 'vendor_admin'],
                 ['Bank accounts', 'vendor.bank-accounts.index', 'vendor.bank-accounts.*', 'vendor_admin'],
