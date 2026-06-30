@@ -105,6 +105,12 @@ class Vendor extends Model
         return $this->hasMany(\App\Modules\Verification\Models\VendorVerification::class);
     }
 
+    /** VB3: reputation snapshot (0–100 + component breakdown). */
+    public function reputation(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Modules\Verification\Models\VendorReputation::class);
+    }
+
     /**
      * VB1: dimensions currently approved & unexpired.
      *

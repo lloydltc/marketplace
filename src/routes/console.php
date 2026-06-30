@@ -38,3 +38,6 @@ Schedule::command('moderation:scan')->dailyAt('05:30');
 
 // VB2: recompute badge tiers (auto-demote on expiry) + re-verification reminders.
 Schedule::command('verification:maintain')->dailyAt('06:00');
+
+// VB3: recompute vendor reputation scores (feeds Top-Rated tier + ranking).
+Schedule::command('reputation:recompute')->dailyAt('06:30');
