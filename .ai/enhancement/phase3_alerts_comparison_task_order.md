@@ -51,4 +51,21 @@ Documented; **confirm live in AC0**.
 
 **Order:** AC0 → AC1 → AC2 → AC3 → AC4 → AC5. AC3 can parallel AC1/AC2.
 
-*Status: Ready · Phase 3 of master_build_roadmap.md*
+*Status: **COMPLETE** (AC0–AC5) · Phase 3 of master_build_roadmap.md · full suite 663 green*
+
+---
+
+## Completion log (AC0–AC5)
+
+Consolidated with the H-series — nothing built twice. No AI (similar = deterministic). Config-driven channels/cadence; all alerts deduped.
+
+| Task | Delivered |
+|------|-----------|
+| AC0 | Audit/reconciliation: H7 #12/#13/#15 (compare/new-match/recently-viewed) + PM8 parts compare shipped; notifications were mail-only; favourites + price-drop + in-app + push were gaps |
+| AC1 | Shared spine: `notifications` (in-app inbox) + `notification_preferences`; `NotificationChannelResolver` (config default → user pref → global), `ChannelAwareNotification` base; inbox + preferences UI; push config-gated |
+| AC2 | New-match alert merged onto the shared base; price-drop capture (`listing_price_history` + model hook) + `alerts:price-drops` to matching saved searches (deduped); deterministic `Vehicle::similar` row |
+| AC3 | Compare up to 5; reusable `<x-compare-table>`; deterministic Est. fuel/ownership-cost row; printable + shareable `?v=` URL |
+| AC4 | Recently-viewed + sponsored surfaces reused (H7/H8), verified |
+| AC5 | End-to-end gate (save→new-match+price-drop in-app, prefs honored, no dupes, compare 5); 663 green |
+
+*Status: Ready → DELIVERED.*
