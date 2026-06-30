@@ -56,4 +56,22 @@ Documented from prior work; **confirm live in VB0**.
 
 **Order:** VB0 → VB1 → VB2 → VB3 → VB4 → VB5 → VB6.
 
-*Status: Ready · Phase 2 of master_build_roadmap.md*
+*Status: **COMPLETE** (VB0–VB6) · Phase 2 of master_build_roadmap.md · full suite 642 green*
+
+---
+
+## Completion log (VB0–VB6)
+
+Extended the existing verified/unverified system into config-driven trust tiers — no rebuild. All actions audited (R6); fraud rules deterministic (no AI).
+
+| Task | Delivered |
+|------|-----------|
+| VB0 | Live audit + reconciliation (reuse: audit_logs, approval queue, document/bank evidence, DS badge, H11 reports; finding: no reviews table → reputation degrades gracefully) |
+| VB1 | `config/verification.php` (5 tiers), `vendor_verifications`, vendor verification_tier/manual_tier/reputation_score, `TierEvaluator` |
+| VB2 | Admin per-dimension approve/reject (config expiry, recompute, audited) + `verification:maintain` (auto-demote + reminders) |
+| VB3 | `vendor_reputation` + `ReputationService` (config-weighted, null-tolerant) + `reputation:recompute`; feeds Top-Rated; ranking-boost config (default off) |
+| VB4 | Badge revoke/reinstate/grant (audited) + `FraudRuleService` (dup-photo via image_hash, rapid-relist) → H11 queue + `fraud:scan` |
+| VB5 | `<x-trust-badge>` on storefront/cards; vendor progress view; admin badge-management panel |
+| VB6 | End-to-end gate (earn→render→demote→revoke, audited; config-driven rules); 642 green |
+
+*Status: Ready → DELIVERED.*
