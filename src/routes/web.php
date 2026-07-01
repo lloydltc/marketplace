@@ -209,6 +209,13 @@ Route::middleware(['auth', 'verified', 'check.status', 'force.password.change'])
         Route::post('requests/{partRequest}/quotes/{quote}/accept', [RfqController::class, 'accept'])->name('rfq.accept');
         Route::post('requests/{partRequest}/close', [RfqController::class, 'close'])->name('rfq.close');
 
+        // TI1/TI2: trade-in valuation + accepting dealer offers (buyer side)
+        Route::get('trade-ins', [\App\Http\Controllers\TradeInController::class, 'index'])->name('trade-ins.index');
+        Route::get('trade-ins/new', [\App\Http\Controllers\TradeInController::class, 'create'])->name('trade-ins.create');
+        Route::post('trade-ins', [\App\Http\Controllers\TradeInController::class, 'store'])->middleware('throttle:20,1')->name('trade-ins.store');
+        Route::get('trade-ins/{tradeIn}', [\App\Http\Controllers\TradeInController::class, 'show'])->name('trade-ins.show');
+        Route::post('trade-ins/{tradeIn}/offers/{offer}/accept', [\App\Http\Controllers\TradeInController::class, 'acceptOffer'])->name('trade-ins.offers.accept');
+
         // HR3: vehicle history reports (purchase + view + purchased list)
         Route::post('vehicles/{vehicle}/history/purchase', [\App\Http\Controllers\HistoryReportController::class, 'purchase'])
             ->middleware('throttle:20,1')->name('history.purchase');
