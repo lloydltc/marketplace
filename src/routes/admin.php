@@ -120,6 +120,10 @@ Route::prefix('vehicles')->name('vehicles.')->group(function () {
     Route::post('{vehicle}/reject', [VehicleApprovalController::class, 'reject'])->name('reject');
 });
 
+// TI2: trade-in ops queue (manual-first shepherding)
+Route::get('trade-ins', [\App\Http\Controllers\Admin\TradeInController::class, 'index'])->name('trade-ins.index');
+Route::get('trade-ins/{tradeIn}', [\App\Http\Controllers\Admin\TradeInController::class, 'show'])->name('trade-ins.show');
+
 // HR4: vehicle history reports admin (sources, manual entry, refunds)
 Route::prefix('history')->name('history.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\HistoryController::class, 'index'])->name('index');

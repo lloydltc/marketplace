@@ -37,6 +37,7 @@ return [
                 ['Delivery zones', 'admin.delivery-zones.index', 'admin.delivery-zones.*'],
                 ['RFQ', 'admin.rfq.index', 'admin.rfq.*'],
                 ['Concierge', 'admin.concierge.index', 'admin.concierge.*'],
+                ['Trade-ins', 'admin.trade-ins.index', 'admin.trade-ins.*'],
             ],
             'Growth' => [
                 ['Users', 'admin.users.index', 'admin.users.*'],
@@ -58,6 +59,7 @@ return [
                 ['Dashboard', 'vendor.dashboard', 'vendor.dashboard'],
                 ['Products', 'vendor.products.index', 'vendor.products.*'],
                 ['Service kits', 'vendor.bundles.index', 'vendor.bundles.*', 'vendor_admin'],
+                ['Trade-in bids', 'vendor.trade-ins.index', 'vendor.trade-ins.*', 'vendor_admin'],
                 ['Vehicles', 'vendor.vehicles.index', 'vendor.vehicles.*'],
                 ['Sales', 'vendor.orders.index', 'vendor.orders.*'],
                 ['Leads', 'vendor.leads.index', 'vendor.leads.*'],

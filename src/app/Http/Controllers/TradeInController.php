@@ -65,6 +65,9 @@ class TradeInController extends Controller
             $tradeIn->photos()->create(['disk' => 'public', 'path' => $path]);
         }
 
+        // TI2: notify verified dealers they can bid (in-app + email per prefs).
+        $this->notifyDealers($tradeIn);
+
         return redirect()->route('trade-ins.show', $tradeIn)
             ->with('status', $estimate ? 'Here is your estimate.' : 'Submitted — we need more comparable listings to estimate; a dealer may still bid.');
     }
@@ -91,6 +94,22 @@ class TradeInController extends Controller
             'offer_id' => $offer->id, 'vendor_id' => $offer->vendor_id, 'amount_minor' => $offer->amount_minor,
         ]);
 
+        // Notify the winning dealer.
+        $offer->vendor?->users()->wherePivot('vendor_role', 'admin')->get()
+            ->each(fn ($u) => $u->notify(new \App\Notifications\TradeInOfferAcceptedNotification($offer)));
+
         return back()->with('status', 'Offer accepted — the dealer will be in touch.');
+    }
+
+    /** Notify approved dealers' admins about a new trade-in they can bid on. */
+    private function notifyDealers(TradeIn $tradeIn): void
+    {
+        \App\Models\Vendor::query()->approved()
+            ->with(['users' => fn ($q) => $q->wherePivot('vendor_role', 'admin')])
+            ->chunk(100, function ($vendors) use ($tradeIn) {
+                foreach ($vendors as $vendor) {
+                    $vendor->users->each(fn ($u) => $u->notify(new \App\Notifications\TradeInSubmittedNotification($tradeIn)));
+                }
+            });
     }
 }

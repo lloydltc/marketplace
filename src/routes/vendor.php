@@ -78,6 +78,10 @@ Route::middleware('role:vendor_admin')->group(function () {
     Route::post('bundles', [\App\Modules\Parts\Controllers\Vendor\BundleController::class, 'store'])->name('bundles.store');
     Route::delete('bundles/{bundle}', [\App\Modules\Parts\Controllers\Vendor\BundleController::class, 'destroy'])->name('bundles.destroy');
 
+    // TI2: dealer trade-in bidding
+    Route::get('trade-ins', [\App\Http\Controllers\Vendor\TradeInBidController::class, 'index'])->name('trade-ins.index');
+    Route::post('trade-ins/{tradeIn}/bid', [\App\Http\Controllers\Vendor\TradeInBidController::class, 'bid'])->name('trade-ins.bid');
+
     // H10: part ⇄ vehicle compatibility (fitments)
     Route::post('products/{product}/fitments', [\App\Modules\Products\Controllers\Vendor\ProductFitmentController::class, 'store'])->name('products.fitments.store');
     Route::delete('products/{product}/fitments/{fitment}', [\App\Modules\Products\Controllers\Vendor\ProductFitmentController::class, 'destroy'])->name('products.fitments.destroy');

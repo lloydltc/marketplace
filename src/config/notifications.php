@@ -23,6 +23,9 @@ return [
         'alert.dealer_promo' => ['label' => 'Dealer promotions',                    'default' => ['in_app'],          'digestable' => true],
         'listing.lifecycle'  => ['label' => 'Your listing updates',                 'default' => ['in_app', 'email'], 'digestable' => false],
         'verification'       => ['label' => 'Verification & badges',                'default' => ['in_app', 'email'], 'digestable' => false],
+        'trade_in.submitted' => ['label' => 'New trade-in submissions (dealers)',   'default' => ['in_app', 'email'], 'digestable' => false],
+        'trade_in.offer'     => ['label' => 'Trade-in offer updates',               'default' => ['in_app', 'email'], 'digestable' => false],
+        'inspection'         => ['label' => 'Inspection updates',                   'default' => ['in_app', 'email'], 'digestable' => false],
     ],
 
     // Saved-search / digest cadence.
