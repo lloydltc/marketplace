@@ -53,4 +53,22 @@ Documented; **confirm live in HR0**.
 **Order:** HR0 → HR1 → HR2 → HR3 → HR4 → HR5.
 **Reality reminder:** ship with whatever sources are live; expand over time. A thin honest report beats a fake comprehensive one.
 
-*Status: Ready (data-gated) · Phase 4 of master_build_roadmap.md*
+*Status: **COMPLETE** (HR0–HR5) · Phase 4 of master_build_roadmap.md · full suite 679 green*
+
+---
+
+## Completion log (HR0–HR5)
+
+Built the module honestly on obtainable sources; gated sources ship registered-but-unavailable (never fabricated). No AI.
+
+**HR0 obtainable-sources verdict:** available-now = import record (ZW fields+VIN), platform ownership/listing history (incl. AC2 price history), dealer-supplied service (manual), odometer (seller-declared). partnership-needed = registration/ZINARA, police clearance/ZRP, roadworthiness/VID. not-feasible-now = insurance/accident. **PDF:** no library present → full report is print-optimised HTML (browser Save-as-PDF); real PDF lib is a later drop-in.
+
+| Task | Delivered |
+|------|-----------|
+| HR1 | `history_reports`, `history_report_sections` (source/confidence/provenance/retrieved_at), `history_data_sources` (adapters) |
+| HR2 | Adapter interface + available-now adapters (import/platform/odometer/service-manual) + gated stubs; `ReportAssembler` (honest unavailable, preserves manual entries, config-priced) |
+| HR3 | Detail-page badge → free preview (locked/unavailable states) → Pesepay purchase (free = instant) → full view + print-PDF + purchased list |
+| HR4 | Admin source status, manual service entry, refunds (audited); price in platform_settings |
+| HR5 | End-to-end gate; 679 green |
+
+*Status: Ready → DELIVERED (with live sources; expand via partnerships).*
