@@ -57,6 +57,11 @@
                            class="inline-flex items-center gap-1 text-caption font-semibold bg-[rgb(var(--info)/0.15)] text-[rgb(var(--info))] px-2 py-0.5 rounded-full hover:underline">
                             📄 Vehicle history available
                         </a>
+                        {{-- TI3: book an independent inspection --}}
+                        <a href="{{ route('inspections.create', $vehicle) }}"
+                           class="inline-flex items-center gap-1 text-caption font-semibold bg-[rgb(var(--success)/0.15)] text-[rgb(var(--success))] px-2 py-0.5 rounded-full hover:underline">
+                            🔧 Book an inspection
+                        </a>
                     </div>
 
                     {{-- H2: Zimbabwe-market badges --}}

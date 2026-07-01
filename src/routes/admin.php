@@ -120,6 +120,11 @@ Route::prefix('vehicles')->name('vehicles.')->group(function () {
     Route::post('{vehicle}/reject', [VehicleApprovalController::class, 'reject'])->name('reject');
 });
 
+// TI3: inspector panel management + inspection oversight
+Route::get('inspectors', [\App\Http\Controllers\Admin\InspectorController::class, 'index'])->name('inspectors.index');
+Route::post('inspectors', [\App\Http\Controllers\Admin\InspectorController::class, 'store'])->name('inspectors.store');
+Route::post('inspectors/{inspector}/toggle', [\App\Http\Controllers\Admin\InspectorController::class, 'toggle'])->name('inspectors.toggle');
+
 // TI2: trade-in ops queue (manual-first shepherding)
 Route::get('trade-ins', [\App\Http\Controllers\Admin\TradeInController::class, 'index'])->name('trade-ins.index');
 Route::get('trade-ins/{tradeIn}', [\App\Http\Controllers\Admin\TradeInController::class, 'show'])->name('trade-ins.show');

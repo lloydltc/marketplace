@@ -59,6 +59,7 @@ class PlatformSettingsSeeder extends Seeder
             ['listings.expiry_soon_days', '7', 'integer', 'listings', 'Days before expiry to start showing buyer countdowns and seller renew prompts.'],
             ['listings.vehicle_renewal_fee', '0.00', 'decimal', 'listings', 'Price (USD) to renew an expired vehicle listing. 0 = free renewal (launch default).'],
             ['history.report_price_usd', '5.00', 'decimal', 'history', 'Price (USD) for a full vehicle history report (HR4).'],
+            ['inspection.fee_usd', '30.00', 'decimal', 'inspection', 'Fee (USD) for a vehicle inspection booking (TI5).'],
 
             // COD matrix rollout flags (§3, §10)
             ['cod.fbs_enabled', '1', 'boolean', 'cod', 'Allow cash on delivery for Fulfilled-by-Salma orders.'],

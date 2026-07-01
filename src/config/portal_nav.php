@@ -38,6 +38,7 @@ return [
                 ['RFQ', 'admin.rfq.index', 'admin.rfq.*'],
                 ['Concierge', 'admin.concierge.index', 'admin.concierge.*'],
                 ['Trade-ins', 'admin.trade-ins.index', 'admin.trade-ins.*'],
+                ['Inspectors', 'admin.inspectors.index', 'admin.inspectors.*'],
             ],
             'Growth' => [
                 ['Users', 'admin.users.index', 'admin.users.*'],

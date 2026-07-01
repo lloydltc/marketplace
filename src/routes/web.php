@@ -174,6 +174,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Authenticated + verified + active status + force-password-check routes
 Route::middleware(['auth', 'verified', 'check.status', 'force.password.change'])->group(function () {
 
+    // TI4: inspector portal (any user linked to an Inspector record)
+    Route::get('inspector/inspections', [\App\Http\Controllers\InspectorPortalController::class, 'index'])->name('inspector.index');
+    Route::post('inspector/inspections/{inspection}/report', [\App\Http\Controllers\InspectorPortalController::class, 'submitReport'])->name('inspector.report');
+
     // AC1: in-app notification inbox + channel preferences (all authenticated roles)
     Route::get('notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
     Route::post('notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'readAll'])->name('notifications.read-all');
@@ -208,6 +212,15 @@ Route::middleware(['auth', 'verified', 'check.status', 'force.password.change'])
         Route::get('requests/{partRequest}', [RfqController::class, 'show'])->name('rfq.show');
         Route::post('requests/{partRequest}/quotes/{quote}/accept', [RfqController::class, 'accept'])->name('rfq.accept');
         Route::post('requests/{partRequest}/close', [RfqController::class, 'close'])->name('rfq.close');
+
+        // TI3/TI4: inspection booking (buyer side)
+        Route::get('vehicles/{vehicle}/inspect', [\App\Http\Controllers\InspectionController::class, 'create'])->name('inspections.create');
+        Route::post('vehicles/{vehicle}/inspect', [\App\Http\Controllers\InspectionController::class, 'store'])->middleware('throttle:20,1')->name('inspections.store');
+        Route::get('inspections', [\App\Http\Controllers\InspectionController::class, 'index'])->name('inspections.index');
+        Route::get('inspections/{inspection}', [\App\Http\Controllers\InspectionController::class, 'show'])->name('inspections.show');
+        Route::get('inspections/{inspection}/return', [\App\Http\Controllers\InspectionController::class, 'paymentReturn'])->name('inspections.return');
+        Route::post('inspections/{inspection}/cancel', [\App\Http\Controllers\InspectionController::class, 'cancel'])->name('inspections.cancel');
+        Route::post('inspections/{inspection}/rate', [\App\Http\Controllers\InspectionController::class, 'rate'])->name('inspections.rate');
 
         // TI1/TI2: trade-in valuation + accepting dealer offers (buyer side)
         Route::get('trade-ins', [\App\Http\Controllers\TradeInController::class, 'index'])->name('trade-ins.index');
