@@ -58,4 +58,21 @@ Documented; **confirm live in TI0**.
 **Order:** TI0 → TI1 → TI2 → TI3 → TI4 → TI5. Trade-in (TI1/TI2) and inspection (TI3/TI4) can parallelise after TI0.
 **Reality reminder:** both are manual-first; build the shells + ops queues, prove demand, then automate.
 
-*Status: Ready (ops-heavy, manual-first) · Phase 5 of master_build_roadmap.md*
+*Status: **COMPLETE** (TI0–TI5) · Phase 5 of master_build_roadmap.md · full suite 694 green*
+
+---
+
+## Completion log (TI0–TI5)
+
+Built manual-first on the concierge ops pattern; no AI (valuation = comparable-listing math).
+
+| Task | Delivered |
+|------|-----------|
+| TI0 | Reconciliation: reused concierge SM/queue pattern, PM0 taxonomy, own listing-price data, Vendor+VB, Pesepay, AC1 notifications, leads, audit_logs |
+| TI1 | `trade_ins`/`trade_in_photos`/`trade_in_offers`; ValuationService (median comparables + config mileage/condition adjust → range, "estimate not an offer", null when insufficient); buyer submit + estimate |
+| TI2 | Dealer bidding: notify approved dealers (in-app+email), bid portal, buyer compare/accept (declines rest, notifies winner, audited), admin ops queue |
+| TI3 | `inspectors`/`inspections`; admin panel; buyer booking → Pesepay pay (free=instant; fee from platform_settings) → confirm; cancel |
+| TI4 | Inspector portal (linked user): assigned jobs + standardized checklist/verdict report → buyer notified; buyer views + print + rates inspector (feeds reputation) |
+| TI5 | Fees in platform_settings; end-to-end gate; 694 green |
+
+*Status: Ready → DELIVERED (manual-first; automate scheduling/matching when volume justifies).*
