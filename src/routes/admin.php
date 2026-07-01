@@ -120,6 +120,14 @@ Route::prefix('vehicles')->name('vehicles.')->group(function () {
     Route::post('{vehicle}/reject', [VehicleApprovalController::class, 'reject'])->name('reject');
 });
 
+// HR4: vehicle history reports admin (sources, manual entry, refunds)
+Route::prefix('history')->name('history.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\HistoryController::class, 'index'])->name('index');
+    Route::post('sources/{source}', [\App\Http\Controllers\Admin\HistoryController::class, 'updateSource'])->name('sources.update');
+    Route::post('{report}/service-records', [\App\Http\Controllers\Admin\HistoryController::class, 'addServiceRecord'])->name('service-records.add');
+    Route::post('{report}/refund', [\App\Http\Controllers\Admin\HistoryController::class, 'refund'])->name('refund');
+});
+
 // H11: listing moderation queue
 Route::get('moderation', [\App\Http\Controllers\Admin\ModerationController::class, 'index'])->name('moderation.index');
 Route::post('moderation/{report}/resolve', [\App\Http\Controllers\Admin\ModerationController::class, 'resolve'])->name('moderation.resolve');

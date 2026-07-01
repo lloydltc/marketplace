@@ -26,6 +26,7 @@ return [
             ],
             'Catalogue' => [
                 ['Parts catalog', 'admin.parts.index', 'admin.parts.*'],
+                ['History reports', 'admin.history.index', 'admin.history.*'],
                 ['Categories', 'admin.categories.index', 'admin.categories.*'],
                 ['Vehicle features', 'admin.vehicle-features.index', 'admin.vehicle-features.*'],
                 ['Promotions', 'admin.promotions.index', 'admin.promotions.*'],
